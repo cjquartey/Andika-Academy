@@ -13,7 +13,7 @@ const userSchema = new Schema({
         trim: true,
         match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address']
     },
-    password: {type: String, required: [true, 'Password is required']},
+    password: {type: String, required: [true, 'Password is required'], select: false},
     profilePictureURL: {type: String},
     bio: {type: String, maxlength: [500, 'Bio cannot exceed 500 characters']},
     role: {type: String, enum: ['user', 'admin'], default: 'user'},
@@ -27,8 +27,5 @@ const userSchema = new Schema({
 }, {
     timestamps: true
 });
-
-userSchema.index({email: 1});
-userSchema.index({username: 1});
 
 module.exports = mongoose.model('User', userSchema);

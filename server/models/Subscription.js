@@ -25,6 +25,5 @@ const subscriptionSchema = new Schema({
 
 subscriptionSchema.index({user: 1, createdAt: -1});
 subscriptionSchema.index({status: 1, endDate: 1});
-subscriptionSchema.index({transactionId: 1});
 
 module.exports = mongoose.model('Subscription', subscriptionSchema);
