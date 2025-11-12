@@ -6,6 +6,8 @@ const helmet = require('helmet');
 const cors = require('cors');
 const app = express();
 const authRoutes = require('./server/routes/authRoutes');
+const writingRoutes = require('./server/routes/writingRoutes');
+const commentRoutes = require('./server/routes/commentRoutes');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -13,6 +15,8 @@ app.use(cors());
 app.use(helmet());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/writings', writingRoutes);
+app.use('/api/comments', commentRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome to Andika Academy API!');
