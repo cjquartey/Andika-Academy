@@ -4,6 +4,7 @@ const connectDB = require('./server/config/database');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 const authRoutes = require('./server/routes/authRoutes');
 const writingRoutes = require('./server/routes/writingRoutes');
@@ -14,7 +15,15 @@ const subscriptionRoutes = require('./server/routes/subscriptionRoutes');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cors());
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: false, // Allow inline scripts for frontend
+}));
+
+// Serve static files from public directory
+app.use('/public', express.static(path.join(__dirname, 'public')));
+
+// Serve static files from views directory
+app.use('/views', express.static(path.join(__dirname, 'views')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/writings', writingRoutes);
@@ -22,9 +31,26 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
+// Root route - serve homepage
 app.get('/', (req, res) => {
-    res.send('Welcome to Andika Academy API!');
-})
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
+// Catch-all route for HTML pages
+app.get('/:page', (req, res) => {
+    const page = req.params.page;
+    const validPages = [
+        'login', 'register', 'writings', 'writing-view', 
+        'dashboard', 'writing-editor', 'my-writings',
+        'bookmarks', 'profile', 'subscription'
+    ];
+    
+    if (validPages.includes(page)) {
+        res.sendFile(path.join(__dirname, 'views', `${page}.html`));
+    } else {
+        res.status(404).send('Page not found');
+    }
+});
 
 const startServer = async () => {
     try{

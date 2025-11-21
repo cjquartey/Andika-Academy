@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write Story - Andika Academy</title>
+    <link rel="stylesheet" href="/public/css/main.css">
+    <link rel="stylesheet" href="/public/css/writing-editor.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <main class="editor-page">
+        <div class="container-narrow">
+            <div class="editor-header">
+                <h1 id="editor-title">Create New Story</h1>
+                <div class="editor-actions">
+                    <button class="btn btn-ghost" id="preview-btn">Preview</button>
+                    <button class="btn btn-outline" id="save-draft-btn">Save Draft</button>
+                    <button class="btn btn-primary" id="publish-btn">Publish</button>
+                </div>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <form id="editor-form" class="editor-form">
+                <div class="form-group">
+                    <input type="text" id="title-input" placeholder="Story Title" maxlength="100" required />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select id="category-select" required>
+                            <option value="">Select category</option>
+                            <option value="prose">Prose</option>
+                            <option value="poetry">Poetry</option>
+                            <option value="drama">Drama</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Access Level *</label>
+                        <select id="access-select" required>
+                            <option value="free">Free</option>
+                            <option value="premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description-input" placeholder="Brief description" rows="3" maxlength="500"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Cover Image URL</label>
+                    <input type="url" id="cover-url-input" placeholder="https://example.com/image.jpg" />
+                </div>
+
+                <div class="form-group">
+                    <label>Tags</label>
+                    <div class="tags-container">
+                        <div id="tags-display"></div>
+                        <input type="text" id="tags-input" placeholder="Add tags (press Enter)" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Content *</label>
+                    <textarea id="content-editor" placeholder="Start writing..." rows="20" required></textarea>
+                    <div class="editor-stats">
+                        <span><strong id="word-count">0</strong> words</span>
+                        <span><strong id="char-count">0</strong> characters</span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <div id="preview-modal" class="modal" style="display: none;">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Preview</h2>
+                <button class="modal-close" id="modal-close">×</button>
+            </div>
+            <div class="modal-body" id="preview-content"></div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="/public/js/config.js"></script>
+    <script src="/public/js/auth.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/writing-editor.js"></script>
+    <script>
+        fetch('/views/components/navbar.html').then(r => r.text()).then(h => document.getElementById('navbar-container').innerHTML = h);
+        fetch('/views/components/footer.html').then(r => r.text()).then(h => document.getElementById('footer-container').innerHTML = h);
+    </script>
+</body>
+</html>

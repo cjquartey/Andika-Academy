@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<nav class="navbar" id="main-navbar">
+    <div class="container navbar-content">
+        <!-- Logo and Brand -->
+        <a href="/views/index.html" class="navbar-brand">
+            <div class="logo-container">
+                <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 5L35 35H5L20 5Z" fill="var(--terracotta)"/>
+                    <circle cx="20" cy="25" r="8" fill="var(--golden-sand)"/>
+                </svg>
+                <div class="brand-text">
+                    <span class="brand-name">Andika</span>
+                    <span class="brand-tagline">Academy</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+            <span class="hamburger"></span>
+        </button>
+
+        <!-- Navigation Links -->
+        <div class="navbar-menu" id="navbar-menu">
+            <!-- Main Navigation -->
+            <div class="nav-links">
+                <a href="/views/index.html" class="nav-link">Home</a>
+                <a href="/views/writings.html" class="nav-link">Explore</a>
+                
+                <!-- Categories Dropdown -->
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-trigger">
+                        Categories
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="currentColor">
+                            <path d="M1 1L6 6L11 1"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="/views/writings.html?category=prose" class="dropdown-item">
+                            <span class="category-icon">📖</span>
+                            Prose
+                        </a>
+                        <a href="/views/writings.html?category=poetry" class="dropdown-item">
+                            <span class="category-icon">✍️</span>
+                            Poetry
+                        </a>
+                        <a href="/views/writings.html?category=drama" class="dropdown-item">
+                            <span class="category-icon">🎭</span>
+                            Drama
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="nav-search">
+                <form action="/views/writings.html" method="get" class="search-form">
+                    <input 
+                        type="search" 
+                        name="search" 
+                        placeholder="Search stories..." 
+                        class="search-input"
+                        autocomplete="off"
+                    />
+                    <button type="submit" class="search-btn" aria-label="Search">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="8" cy="8" r="6"/>
+                            <path d="M12 12L18 18"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Guest Links (shown when not logged in) -->
+            <div class="nav-actions" id="guest-links">
+                <a href="/views/login.html" class="btn btn-ghost">Login</a>
+                <a href="/views/register.html" class="btn btn-primary">Get Started</a>
+            </div>
+
+            <!-- Authenticated Links (shown when logged in) -->
+            <div class="nav-actions hidden" id="auth-links">
+                <a href="/views/writing-editor.html" class="btn btn-outline btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M12 0L16 4L5 15H1V11L12 0Z"/>
+                    </svg>
+                    Write
+                </a>
+                
+                <!-- User Dropdown -->
+                <div class="nav-dropdown">
+                    <button class="user-menu-trigger" id="user-menu-trigger">
+                        <div class="user-avatar-container" id="user-info">
+                            <img src="/public/images/default-avatar.png" alt="User" class="user-avatar">
+                            <span class="user-name">User</span>
+                        </div>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="currentColor">
+                            <path d="M1 1L6 6L11 1"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a href="/views/dashboard.html" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <rect width="7" height="7" rx="1"/>
+                                <rect x="9" width="7" height="7" rx="1"/>
+                                <rect y="9" width="7" height="7" rx="1"/>
+                                <rect x="9" y="9" width="7" height="7" rx="1"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                        <a href="/views/my-writings.html" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M3 0H13C14.1 0 15 0.9 15 2V14C15 15.1 14.1 16 13 16H3C1.9 16 1 15.1 1 14V2C1 0.9 1.9 0 3 0Z"/>
+                            </svg>
+                            My Writings
+                        </a>
+                        <a href="/views/bookmarks.html" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M3 0H13C13.55 0 14 0.45 14 1V16L8 13L2 16V1C2 0.45 2.45 0 3 0Z"/>
+                            </svg>
+                            Bookmarks
+                        </a>
+                        <a href="/views/subscription.html" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 0L10 6H16L11 10L13 16L8 12L3 16L5 10L0 6H6L8 0Z"/>
+                            </svg>
+                            Subscription
+                        </a>
+                        <hr class="dropdown-divider">
+                        <button onclick="Auth.logout()" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M6 14H3C2.45 14 2 13.55 2 13V3C2 2.45 2.45 2 3 2H6V0H3C1.34 0 0 1.34 0 3V13C0 14.66 1.34 16 3 16H6V14ZM13.59 7L10.29 3.71L11.71 2.29L16.71 7.29C17.1 7.68 17.1 8.31 16.71 8.7L11.71 13.7L10.29 12.29L13.59 9H6V7H13.59Z"/>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+.navbar {
+    background: linear-gradient(135deg, var(--deep-blue) 0%, #152D54 100%);
+    color: white;
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: var(--shadow-md);
+}
+
+.navbar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+/* Logo & Brand */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    transition: transform var(--transition-base);
+}
+
+.navbar-brand:hover {
+    transform: scale(1.02);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.brand-name {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.brand-tagline {
+    font-size: 0.75rem;
+    color: var(--golden-sand);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.hamburger {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: white;
+    position: relative;
+    transition: background-color var(--transition-fast);
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background-color: white;
+    transition: all var(--transition-fast);
+}
+
+.hamburger::before {
+    top: -7px;
+}
+
+.hamburger::after {
+    top: 7px;
+}
+
+/* Navigation Menu */
+.navbar-menu {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: 1;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: var(--font-body);
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--golden-sand);
+}
+
+/* Dropdown */
+.nav-dropdown {
+    position: relative;
+}
+
+.dropdown-trigger {
+    background: none;
+    border: none;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    min-width: 200px;
+    padding: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all var(--transition-base);
+}
+
+.dropdown-menu-right {
+    left: auto;
+    right: 0;
+}
+
+.nav-dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-dark);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+    font-size: 0.95rem;
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(206, 89, 55, 0.1);
+    color: var(--primary);
+}
+
+.dropdown-item svg {
+    width: 16px;
+    height: 16px;
+}
+
+.dropdown-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0.5rem 0;
+}
+
+.category-icon {
+    font-size: 1.25rem;
+}
+
+/* Search */
+.nav-search {
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.625rem 2.5rem 0.625rem 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 100px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.95rem;
+    transition: all var(--transition-fast);
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-input:focus {
+    background-color: white;
+    color: var(--text-dark);
+    border-color: white;
+}
+
+.search-input:focus::placeholder {
+    color: var(--text-light);
+}
+
+.search-btn {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-input:focus + .search-btn {
+    color: var(--text-dark);
+}
+
+/* Actions */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+/* User Menu */
+.user-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 100px;
+    padding: 0.375rem 0.75rem 0.375rem 0.375rem;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    color: white;
+}
+
+.user-menu-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.user-avatar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--golden-sand);
+}
+
+.user-name {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .navbar-menu {
+        position: fixed;
+        top: 73px;
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, var(--deep-blue) 0%, #152D54 100%);
+        flex-direction: column;
+        align-items: stretch;
+        padding: var(--spacing-md);
+        transform: translateX(-100%);
+        transition: transform var(--transition-base);
+        max-height: calc(100vh - 73px);
+        overflow-y: auto;
+    }
+
+    .navbar-menu.active {
+        transform: translateX(0);
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nav-link {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .nav-search {
+        max-width: none;
+    }
+
+    .nav-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-actions .btn {
+        width: 100%;
+    }
+
+    .dropdown-menu {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        margin-top: 0.5rem;
+        display: none;
+    }
+
+    .nav-dropdown.active .dropdown-menu {
+        display: block;
+    }
+}
+</style>
+
+<script>
+// Mobile menu toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    const navbarMenu = document.getElementById('navbar-menu');
+    
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', () => {
+            navbarMenu.classList.toggle('active');
+        });
+    }
+
+    // Handle dropdowns on mobile
+    const dropdownTriggers = document.querySelectorAll('.dropdown-trigger');
+    dropdownTriggers.forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+            if (window.innerWidth <= 992) {
+                e.preventDefault();
+                trigger.parentElement.classList.toggle('active');
+            }
+        });
+    });
+});
+</script>

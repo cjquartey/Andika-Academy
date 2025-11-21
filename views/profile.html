@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Andika Academy</title>
+    <link rel="stylesheet" href="/public/css/main.css">
+    <style>
+        .profile-page { padding: 2rem 0; min-height: calc(100vh - 73px); }
+        .profile-header { background: linear-gradient(135deg, #1B3B6F 0%, #CE5937 100%); padding: 3rem 2rem; border-radius: 1rem; color: white; margin-bottom: 2rem; text-align: center; }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 1rem; }
+        .profile-name { font-size: 2rem; margin-bottom: 0.5rem; }
+        .profile-email { opacity: 0.9; }
+        .profile-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-box { background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #CE5937; }
+        .stat-label { color: #666; margin-top: 0.5rem; }
+        .profile-section { background: white; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .profile-section h2 { margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 2px solid #e5e5e5; border-radius: 0.5rem; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .btn-group { display: flex; gap: 1rem; }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <main class="profile-page">
+        <div class="container">
+            <div class="profile-header">
+                <div class="profile-avatar" id="avatar">👤</div>
+                <h1 class="profile-name" id="profile-name">Loading...</h1>
+                <p class="profile-email" id="profile-email"></p>
+                <span class="badge" id="subscription-badge">Basic</span>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="stat-stories">0</div>
+                    <div class="stat-label">Stories Published</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="stat-views">0</div>
+                    <div class="stat-label">Total Views</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="stat-rating">0.0</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="stat-joined">-</div>
+                    <div class="stat-label">Member Since</div>
+                </div>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <div class="profile-section">
+                <h2>Profile Information</h2>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="firstName" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" id="lastName" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" id="username" required readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="email" required readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Bio</label>
+                        <textarea id="bio" placeholder="Tell readers about yourself..." maxlength="500"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Profile Picture URL</label>
+                        <input type="url" id="profilePictureURL" placeholder="https://example.com/image.jpg" />
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-outline" onclick="window.location.reload()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="profile-section">
+                <h2>Change Password</h2>
+                <form id="password-form">
+                    <div class="form-group">
+                        <label>Current Password *</label>
+                        <input type="password" id="currentPassword" required />
+                    </div>
+                    <div class="form-group">
+                        <label>New Password *</label>
+                        <input type="password" id="newPassword" required minlength="8" />
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password *</label>
+                        <input type="password" id="confirmPassword" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="/public/js/config.js"></script>
+    <script src="/public/js/auth.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/profile.js"></script>
+    <script>
+        fetch('/views/components/navbar.html').then(r => r.text()).then(h => document.getElementById('navbar-container').innerHTML = h);
+        fetch('/views/components/footer.html').then(r => r.text()).then(h => document.getElementById('footer-container').innerHTML = h);
+    </script>
+</body>
+</html>

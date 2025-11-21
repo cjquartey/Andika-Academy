@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription - Andika Academy</title>
+    <link rel="stylesheet" href="/public/css/main.css">
+    <style>
+        .subscription-page { padding: 2rem 0; min-height: calc(100vh - 73px); }
+        .page-header { text-align: center; margin-bottom: 3rem; }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .page-header p { font-size: 1.25rem; color: #666; }
+        .current-plan { background: linear-gradient(135deg, #1B3B6F 0%, #CE5937 100%); padding: 2rem; border-radius: 1rem; color: white; margin-bottom: 3rem; text-align: center; }
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .plan-card { background: white; border: 3px solid #e5e5e5; border-radius: 1rem; padding: 2rem; text-align: center; transition: all 0.3s; }
+        .plan-card.featured { border-color: #CE5937; transform: scale(1.05); }
+        .plan-card:hover { transform: translateY(-8px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+        .plan-name { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .plan-price { font-size: 3rem; font-weight: 700; color: #CE5937; margin-bottom: 0.5rem; }
+        .plan-price span { font-size: 1.25rem; }
+        .plan-features { text-align: left; margin: 2rem 0; }
+        .plan-features li { padding: 0.75rem 0; border-bottom: 1px solid #e5e5e5; }
+        .plan-features li:before { content: "✓ "; color: #2D5016; font-weight: bold; }
+        .badge { display: inline-block; background: #2D5016; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; margin-bottom: 1rem; }
+        .payment-methods { margin-top: 3rem; padding: 2rem; background: #f9f9f9; border-radius: 1rem; }
+        .payment-methods h3 { margin-bottom: 1rem; }
+        .payment-options { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .payment-option { padding: 1rem 2rem; border: 2px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; }
+        .payment-option.selected { border-color: #CE5937; background: rgba(206, 89, 55, 0.1); }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <main class="subscription-page">
+        <div class="container">
+            <div class="page-header">
+                <h1>Choose Your Plan</h1>
+                <p>Unlock unlimited storytelling potential</p>
+            </div>
+
+            <div class="current-plan" id="current-plan">
+                <h3>Current Plan: <span id="current-tier">Loading...</span></h3>
+                <p id="current-status"></p>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <div class="plans-grid">
+                <div class="plan-card">
+                    <div class="plan-name">Basic</div>
+                    <div class="plan-price">FREE</div>
+                    <p>Get started with basic features</p>
+                    <ul class="plan-features">
+                        <li>Up to 5 publications per month</li>
+                        <li>Basic analytics</li>
+                        <li>Community support</li>
+                        <li>Free tier stories only</li>
+                    </ul>
+                    <button class="btn btn-outline" id="basic-btn">Current Plan</button>
+                </div>
+
+                <div class="plan-card featured">
+                    <span class="badge">MOST POPULAR</span>
+                    <div class="plan-name">Premium</div>
+                    <div class="plan-price">GHS 30<span>/month</span></div>
+                    <p>For serious writers</p>
+                    <ul class="plan-features">
+                        <li>Unlimited publications</li>
+                        <li>Advanced analytics</li>
+                        <li>Premium formatting tools</li>
+                        <li>Priority support</li>
+                        <li>Ad-free experience</li>
+                        <li>Create premium content</li>
+                    </ul>
+                    <button class="btn btn-primary" id="premium-btn">Upgrade Now</button>
+                </div>
+            </div>
+
+            <div class="payment-methods" id="payment-section" style="display: none;">
+                <h3>Select Payment Method</h3>
+                <div class="payment-options">
+                    <div class="payment-option" data-method="mobile_money">
+                        📱 Mobile Money
+                    </div>
+                    <div class="payment-option" data-method="card">
+                        💳 Card Payment
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn btn-primary btn-lg" id="proceed-payment">Proceed to Payment</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem; padding: 2rem; background: #f9f9f9; border-radius: 1rem;">
+                <h3>Subscription History</h3>
+                <div id="subscription-history">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="/public/js/config.js"></script>
+    <script src="/public/js/auth.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/subscription.js"></script>
+    <script>
+        fetch('/views/components/navbar.html').then(r => r.text()).then(h => document.getElementById('navbar-container').innerHTML = h);
+        fetch('/views/components/footer.html').then(r => r.text()).then(h => document.getElementById('footer-container').innerHTML = h);
+    </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andika Academy - Where African Stories Come Alive</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/public/css/main.css">
+    <link rel="stylesheet" href="/public/css/home.css">
+</head>
+<body>
+    <!-- Include Navbar -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-pattern"></div>
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">Where African Stories Come Alive</h1>
+                    <p class="hero-subtitle">
+                        Discover authentic narratives, share your voice, and connect with a vibrant 
+                        community of writers and readers celebrating African literature.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="/views/register.html" class="btn btn-primary btn-lg">
+                            Start Writing
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 0l10 10-10 10V0z"/>
+                            </svg>
+                        </a>
+                        <a href="/views/writings.html" class="btn btn-outline btn-lg">
+                            Explore Stories
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-value">2,000+</span>
+                            <span class="stat-label">Writers</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">10,000+</span>
+                            <span class="stat-label">Stories</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">50,000+</span>
+                            <span class="stat-label">Readers</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="hero-image-container">
+                        <div class="floating-card card-1">
+                            <div class="card-icon">📖</div>
+                            <div class="card-text">Prose</div>
+                        </div>
+                        <div class="floating-card card-2">
+                            <div class="card-icon">✍️</div>
+                            <div class="card-text">Poetry</div>
+                        </div>
+                        <div class="floating-card card-3">
+                            <div class="card-icon">🎭</div>
+                            <div class="card-text">Drama</div>
+                        </div>
+                        <div class="hero-circle"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="categories-section">
+            <div class="container">
+                <h2 class="section-title text-center">Explore by Category</h2>
+                <p class="section-subtitle text-center">
+                    Find stories that speak to your soul
+                </p>
+                <div class="categories-grid">
+                    <a href="/views/writings.html?category=prose" class="category-card">
+                        <div class="category-icon">📖</div>
+                        <h3>Prose</h3>
+                        <p>Short stories, novels, and narratives that capture the essence of life</p>
+                        <span class="category-count" id="prose-count">Loading...</span>
+                    </a>
+                    <a href="/views/writings.html?category=poetry" class="category-card">
+                        <div class="category-icon">✍️</div>
+                        <h3>Poetry</h3>
+                        <p>Verses that touch the heart and stir the imagination</p>
+                        <span class="category-count" id="poetry-count">Loading...</span>
+                    </a>
+                    <a href="/views/writings.html?category=drama" class="category-card">
+                        <div class="category-icon">🎭</div>
+                        <h3>Drama</h3>
+                        <p>Plays and scripts that bring characters and conflicts to life</p>
+                        <span class="category-count" id="drama-count">Loading...</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Writings Section -->
+        <section class="featured-section">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Featured Stories</h2>
+                        <p class="section-subtitle">Handpicked stories from talented writers</p>
+                    </div>
+                    <a href="/views/writings.html" class="btn btn-ghost">
+                        View All
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 0L6.59 1.41 12.17 7H0v2h12.17l-5.58 5.59L8 16l8-8-8-8z"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Loading State -->
+                <div id="featured-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- Featured Writings Grid -->
+                <div id="featured-writings" class="writings-grid" style="display: none;"></div>
+
+                <!-- Empty State -->
+                <div id="featured-empty" class="empty-state" style="display: none;">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="8" y="8" width="48" height="48" rx="4"/>
+                        <path d="M8 24h48M24 8v48"/>
+                    </svg>
+                    <h3>No Stories Yet</h3>
+                    <p>Be the first to share your story with the community!</p>
+                    <a href="/views/writing-editor.html" class="btn btn-primary">Start Writing</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Writings Section -->
+        <section class="recent-section">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Latest Releases</h2>
+                        <p class="section-subtitle">Fresh stories from our community</p>
+                    </div>
+                    <a href="/views/writings.html?sort=recent" class="btn btn-ghost">
+                        View All
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 0L6.59 1.41 12.17 7H0v2h12.17l-5.58 5.59L8 16l8-8-8-8z"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Loading State -->
+                <div id="recent-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- Recent Writings Grid -->
+                <div id="recent-writings" class="writings-grid" style="display: none;"></div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Ready to Share Your Story?</h2>
+                    <p>Join thousands of writers who are making their voices heard. Start your journey today.</p>
+                    <div class="cta-actions">
+                        <a href="/views/register.html" class="btn btn-primary btn-lg">Get Started Free</a>
+                        <a href="/views/subscription.html" class="btn btn-outline btn-lg">View Plans</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="how-it-works-section">
+            <div class="container">
+                <h2 class="section-title text-center">How It Works</h2>
+                <p class="section-subtitle text-center">Three simple steps to start sharing your stories</p>
+                
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-icon">✍️</div>
+                        <h3>Create Account</h3>
+                        <p>Sign up for free and join our community of passionate writers and readers</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-icon">📝</div>
+                        <h3>Write Your Story</h3>
+                        <p>Use our simple editor to craft your prose, poetry, or drama. Save as draft or publish</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-icon">🌍</div>
+                        <h3>Share & Connect</h3>
+                        <p>Publish your work and connect with readers who appreciate authentic storytelling</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Include Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Scripts -->
+    <script src="/public/js/config.js"></script>
+    <script src="/public/js/auth.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/home.js"></script>
+
+    <!-- Load Components -->
+    <script>
+        // Load navbar
+        fetch('/views/components/navbar.html')
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('navbar-container').innerHTML = html;
+            });
+
+        // Load footer
+        fetch('/views/components/footer.html')
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('footer-container').innerHTML = html;
+            });
+    </script>
+</body>
+</html>

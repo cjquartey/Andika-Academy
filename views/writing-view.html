@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Story - Andika Academy</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/public/css/main.css">
+    <link rel="stylesheet" href="/public/css/writing-view.css">
+</head>
+<body>
+    <!-- Include Navbar -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <main class="writing-view-page">
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="error-state" style="display: none;">
+            <div class="container-narrow">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="40" cy="40" r="35"/>
+                    <path d="M40 25v20M40 55h.01"/>
+                </svg>
+                <h2>Story Not Found</h2>
+                <p id="error-message">The story you're looking for doesn't exist or has been removed.</p>
+                <a href="/views/writings.html" class="btn btn-primary">Browse Stories</a>
+            </div>
+        </div>
+
+        <!-- Writing Content -->
+        <div id="writing-content" style="display: none;">
+            <!-- Cover Image -->
+            <div id="cover-section" class="cover-section" style="display: none;">
+                <img id="cover-image" src="" alt="" class="cover-image">
+                <div class="cover-overlay"></div>
+            </div>
+
+            <!-- Writing Header -->
+            <div class="container-narrow">
+                <article class="writing-article">
+                    <!-- Breadcrumb -->
+                    <nav class="breadcrumb">
+                        <a href="/views/index.html">Home</a>
+                        <span class="separator">/</span>
+                        <a href="/views/writings.html">Stories</a>
+                        <span class="separator">/</span>
+                        <span id="breadcrumb-category">Category</span>
+                    </nav>
+
+                    <!-- Header -->
+                    <header class="writing-header">
+                        <div class="category-badge" id="category-badge"></div>
+                        <h1 class="writing-title" id="writing-title"></h1>
+                        <p class="writing-description" id="writing-description"></p>
+
+                        <!-- Author Info -->
+                        <div class="author-info">
+                            <a href="#" id="author-link" class="author-link">
+                                <img id="author-avatar" src="" alt="" class="author-avatar">
+                                <div class="author-details">
+                                    <div class="author-name" id="author-name"></div>
+                                    <div class="publish-date" id="publish-date"></div>
+                                </div>
+                            </a>
+                            <div class="writing-actions">
+                                <button id="bookmark-btn" class="action-btn" title="Bookmark">
+                                    <svg class="bookmark-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 0H17C17.55 0 18 0.45 18 1V20L10 16L2 20V1C2 0.45 2.45 0 3 0Z"/>
+                                    </svg>
+                                    <span class="action-text">Save</span>
+                                </button>
+                                <button class="action-btn" onclick="shareStory()">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="15" cy="5" r="3"/>
+                                        <circle cx="5" cy="10" r="3"/>
+                                        <circle cx="15" cy="15" r="3"/>
+                                        <path d="M7.5 11.5l5 2M12.5 6.5l-5 2"/>
+                                    </svg>
+                                    <span class="action-text">Share</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Stats Bar -->
+                        <div class="stats-bar">
+                            <div class="stat-item">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 2C6.24 2 2.73 3.56 1 6c1.73 2.44 4.24 4 7 4s5.27-1.56 7-4c-1.73-2.44-4.24-4-7-4zm0 6.5C8.62 8.5 7.5 7.38 7.5 6S8.62 3.5 10 3.5 12.5 4.62 12.5 6 11.38 8.5 10 8.5zm0-3.5c-.83 0-1.5.67-1.5 1.5S9.17 7.5 10 7.5s1.5-.67 1.5-1.5S10.83 5 10 5z"/>
+                                </svg>
+                                <span id="view-count">0 views</span>
+                            </div>
+                            <div class="stat-item">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="var(--golden-sand)">
+                                    <path d="M10 0l2.5 7.5h7.5l-6 4.5 2.5 7.5-6-4.5-6 4.5 2.5-7.5-6-4.5h7.5L10 0z"/>
+                                </svg>
+                                <span id="rating-display">No ratings yet</span>
+                            </div>
+                            <div class="stat-item">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 0C6.69 0 4 2.69 4 6c0 4.5 6 10 6 10s6-5.5 6-10c0-3.31-2.69-6-6-6zm0 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                                </svg>
+                                <span id="reading-time">5 min read</span>
+                            </div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div id="tags-container" class="tags-container"></div>
+                    </header>
+
+                    <!-- Premium Gate -->
+                    <div id="premium-gate" class="premium-gate" style="display: none;">
+                        <div class="premium-gate-content">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <circle cx="32" cy="32" r="30" stroke="var(--golden-sand)" stroke-width="2"/>
+                                <path d="M32 10l6 18h18l-15 11 6 18-15-11-15 11 6-18-15-11h18l6-18z" fill="var(--golden-sand)"/>
+                            </svg>
+                            <h3>Premium Content</h3>
+                            <p>This story is available exclusively to premium members. Upgrade your subscription to unlock unlimited access to premium content.</p>
+                            <div class="premium-features">
+                                <div class="feature">✓ Unlimited premium stories</div>
+                                <div class="feature">✓ Ad-free reading experience</div>
+                                <div class="feature">✓ Support your favorite writers</div>
+                            </div>
+                            <a href="/views/subscription.html" class="btn btn-primary btn-lg">Upgrade to Premium</a>
+                            <a href="/views/writings.html" class="btn btn-ghost">Browse Free Stories</a>
+                        </div>
+                    </div>
+
+                    <!-- Writing Body -->
+                    <div id="writing-body" class="writing-body"></div>
+
+                    <!-- Author Bio Section -->
+                    <div id="author-section" class="author-section">
+                        <h3>About the Author</h3>
+                        <div class="author-card">
+                            <img id="author-bio-avatar" src="" alt="" class="author-bio-avatar">
+                            <div class="author-bio-content">
+                                <h4 id="author-bio-name"></h4>
+                                <p id="author-bio" class="author-bio-text">No bio available.</p>
+                                <a id="author-profile-link" href="#" class="btn btn-outline btn-sm">View Profile</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rating Section -->
+                    <div id="rating-section" class="rating-section" style="display: none;">
+                        <h3>Rate This Story</h3>
+                        <p>Share your thoughts and rate this story</p>
+                        <div class="rating-input">
+                            <button class="star-btn" data-rating="1">★</button>
+                            <button class="star-btn" data-rating="2">★</button>
+                            <button class="star-btn" data-rating="3">★</button>
+                            <button class="star-btn" data-rating="4">★</button>
+                            <button class="star-btn" data-rating="5">★</button>
+                        </div>
+                        <p class="rating-label" id="rating-label">Select a rating</p>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="comments-section">
+                        <h3>Comments (<span id="comment-count">0</span>)</h3>
+
+                        <!-- Comment Form -->
+                        <div id="comment-form-container" style="display: none;">
+                            <form id="comment-form" class="comment-form">
+                                <textarea 
+                                    id="comment-content" 
+                                    placeholder="Share your thoughts on this story..."
+                                    rows="4"
+                                    maxlength="1000"
+                                    required
+                                ></textarea>
+                                <div class="comment-form-actions">
+                                    <span class="char-count"><span id="char-count">0</span>/1000</span>
+                                    <button type="submit" class="btn btn-primary">Post Comment</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Login Prompt -->
+                        <div id="comment-login-prompt" class="login-prompt" style="display: none;">
+                            <p>Please <a href="/views/login.html">login</a> to leave a comment</p>
+                        </div>
+
+                        <!-- Comments List -->
+                        <div id="comments-loading" class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="comments-list" class="comments-list" style="display: none;"></div>
+                        <div id="comments-empty" class="empty-comments" style="display: none;">
+                            <p>No comments yet. Be the first to share your thoughts!</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <!-- Include Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Scripts -->
+    <script src="/public/js/config.js"></script>
+    <script src="/public/js/auth.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/writing-view.js"></script>
+
+    <!-- Load Components -->
+    <script>
+        fetch('/views/components/navbar.html')
+            .then(res => res.text())
+            .then(html => document.getElementById('navbar-container').innerHTML = html);
+
+        fetch('/views/components/footer.html')
+            .then(res => res.text())
+            .then(html => document.getElementById('footer-container').innerHTML = html);
+    </script>
+</body>
+</html>
