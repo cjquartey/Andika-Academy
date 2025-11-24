@@ -263,7 +263,29 @@ const getWritingsByUser = async (req, res) => {
         });
     }
 };
+const uploadCoverImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            });
+        }
 
+        const imageUrl = `/public/uploads/covers/${req.file.filename}`;
+
+        return res.status(200).json({
+            success: true,
+            imageUrl: imageUrl,
+            message: 'Cover image uploaded successfully'
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
 module.exports = {
     createWriting,
     getAllWritings,
@@ -271,5 +293,6 @@ module.exports = {
     updateWriting,
     deleteWriting,
     publishWriting,
-    getWritingsByUser
+    getWritingsByUser,
+    uploadCoverImage
 }

@@ -264,12 +264,14 @@ function updateStarDisplay(rating) {
 async function submitRating(rating) {
     try {
         const response = await API.post(`/comments/writing/${writingId}`, {
+            content: '', // Empty content for rating-only comments
             rating: rating
         });
 
         if (response.success) {
             // Reload writing to get updated rating
             loadWriting();
+            alert('Rating submitted successfully!');
         }
     } catch (error) {
         console.error('Failed to submit rating:', error);

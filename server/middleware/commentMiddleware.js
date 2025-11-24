@@ -3,8 +3,16 @@ const {body, validationResult} = require('express-validator');
 const validateCreateComment = [
     body('content')
         .trim()
-        .notEmpty().withMessage('Content is required')
-        .isLength({max: 1000}),
+        .custom((value, { req }) => {
+            // Content is optional if rating is provided, but required otherwise
+            if (!req.body.rating && (!value || value.length === 0)) {
+                throw new Error('Content is required when not providing a rating');
+            }
+            if (value && value.length > 1000) {
+                throw new Error('Content cannot exceed 1000 characters');
+            }
+            return true;
+        }),
 
     body('rating')
         .optional()

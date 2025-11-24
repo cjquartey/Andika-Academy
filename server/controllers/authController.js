@@ -75,6 +75,167 @@ const getCurrentUser = async (req, res) => {
     } catch(err){
         res.status(500).json({message: err.message});
     }
-}
+};
 
-module.exports = {register, login, getCurrentUser};
+const getUserById = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const foundUser = await User.findById(userId);
+        
+        if(!foundUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        const {_id, username, firstName, lastName, bio, subscriptionTier, profilePictureURL, createdAt} = foundUser;
+
+        return res.status(200).json({
+            success: true,
+            user: {
+                id: _id,
+                username,
+                firstName,
+                lastName,
+                bio,
+                subscriptionTier,
+                profilePictureURL,
+                createdAt
+            }
+        });
+    } catch(err){
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+const uploadProfilePicture = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            });
+        }
+
+        const userId = req.user.id;
+        const imageUrl = `/public/uploads/profiles/${req.file.filename}`;
+
+        // Update user's profile picture URL
+        await User.findByIdAndUpdate(userId, {
+            profilePictureURL: imageUrl
+        });
+
+        return res.status(200).json({
+            success: true,
+            imageUrl: imageUrl,
+            message: 'Profile picture uploaded successfully'
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { firstName, lastName, bio, profilePictureURL } = req.body;
+
+        const updateData = {};
+        if (firstName !== undefined) updateData.firstName = firstName;
+        if (lastName !== undefined) updateData.lastName = lastName;
+        if (bio !== undefined) updateData.bio = bio;
+        if (profilePictureURL !== undefined) updateData.profilePictureURL = profilePictureURL;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updateData,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        const { username, email, firstName: fName, lastName: lName, bio: userBio, role, subscriptionTier, profilePictureURL: picURL } = updatedUser;
+
+        return res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully',
+            user: {
+                id: userId,
+                username,
+                email,
+                firstName: fName,
+                lastName: lName,
+                bio: userBio,
+                role,
+                subscriptionTier,
+                profilePictureURL: picURL
+            }
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+const updatePassword = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { currentPassword, newPassword } = req.body;
+
+        const user = await User.findById(userId).select('+password');
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Current password is incorrect'
+            });
+        }
+
+        // Hash and update new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Password updated successfully'
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+module.exports = {
+    register,
+    login, 
+    getCurrentUser,
+    getUserById,
+    uploadProfilePicture,
+    updateProfile,
+    updatePassword
+};

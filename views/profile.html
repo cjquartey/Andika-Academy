@@ -81,8 +81,10 @@
                         <textarea id="bio" placeholder="Tell readers about yourself..." maxlength="500"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Profile Picture URL</label>
-                        <input type="url" id="profilePictureURL" placeholder="https://example.com/image.jpg" />
+                        <label>Profile Picture</label>
+                        <input type="file" id="profilePicture" accept="image/*" />
+                        <small>Max size: 5MB. Formats: JPEG, PNG, WebP</small>
+                        <div id="profile-pic-preview" style="margin-top: 1rem;"></div>
                     </div>
                     <div class="btn-group">
                         <button type="submit" class="btn btn-primary">Save Changes</button>

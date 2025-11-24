@@ -32,7 +32,7 @@ const API = {
             }
 
             // Handle other errors
-            if (!response.ok) {
+            if (!response.ok && response.status !== 201) {
                 throw new Error(data.message || 'Something went wrong');
             }
 

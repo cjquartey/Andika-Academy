@@ -4,12 +4,18 @@ const authMiddleware = require('../middleware/authMiddleware');
 const writingController = require('../controllers/writingController');
 const writingMiddleware = require('../middleware/writingMiddleware');
 const authorizationMiddleware = require('../middleware/authorizationMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 router.get('/', writingController.getAllWritings);
 router.post('/',
     authMiddleware.verifyToken,
     writingMiddleware.validateCreate,
     writingController.createWriting
+);
+router.post('/upload-cover',
+    authMiddleware.verifyToken,
+    upload.single('coverImage'),
+    writingController.uploadCoverImage
 );
 router.get('/user/:userId', writingController.getWritingsByUser);
 router.get('/:id', writingController.getWritingById);
