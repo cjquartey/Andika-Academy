@@ -6,7 +6,9 @@ const commentSchema = new Schema({
     writing: {type: Schema.Types.ObjectId, ref: 'Writing', required: [true, 'Writing is required']},
     content: {
         type: String, 
-        required: [true, 'Comment content is required'], 
+        required: function() {
+            return !this.rating;
+        },
         trim: true, 
         maxlength: [1000, 'Comment cannot exceed 1000 characters']
     },

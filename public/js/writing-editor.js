@@ -7,13 +7,15 @@ const isEditing = !!writingId;
 
 let tags = [];
 let saveTimeout = null;
+let coverImageUrl = '';
 
 const editorTitleEl = document.getElementById('editor-title');
 const titleInputEl = document.getElementById('title-input');
 const categorySelectEl = document.getElementById('category-select');
 const accessSelectEl = document.getElementById('access-select');
 const descriptionInputEl = document.getElementById('description-input');
-const coverUrlInputEl = document.getElementById('cover-url-input');
+const coverImageInputEl = document.getElementById('cover-image-input');
+const coverPreviewEl = document.getElementById('cover-preview');
 const tagsInputEl = document.getElementById('tags-input');
 const tagsDisplayEl = document.getElementById('tags-display');
 const contentEditorEl = document.getElementById('content-editor');
@@ -53,6 +55,25 @@ function removeTag(tag) {
     renderTags();
 }
 
+async function handleCoverImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('coverImage', file);
+
+    try {
+        const response = await API.upload('/writings/upload-cover', formData);
+        if (response.success) {
+            coverImageUrl = response.imageUrl;
+            coverPreviewEl.innerHTML = `<img src="${coverImageUrl}" style="max-width: 300px; border-radius: 8px;" />`;
+            showAlert('Cover image uploaded!', 'success');
+        }
+    } catch (error) {
+        showAlert('Failed to upload image', 'error');
+    }
+}
+
 function renderTags() {
     tagsDisplayEl.innerHTML = tags.map(tag => `
         <span class="tag">
@@ -68,7 +89,7 @@ function getFormData() {
         category: categorySelectEl.value,
         accessLevel: accessSelectEl.value,
         description: descriptionInputEl.value.trim(),
-        coverImageURL: coverUrlInputEl.value.trim(),
+        coverImageURL: coverImageUrl,
         tags: tags,
         content: contentEditorEl.value.trim()
     };
@@ -182,7 +203,10 @@ async function loadWriting() {
         categorySelectEl.value = writing.category;
         accessSelectEl.value = writing.accessLevel;
         descriptionInputEl.value = writing.description || '';
-        coverUrlInputEl.value = writing.coverImageURL || '';
+        coverImageUrl = writing.coverImageURL || '';
+        if (coverImageUrl) {
+            coverPreviewEl.innerHTML = `<img src="${coverImageUrl}" style="max-width: 300px; border-radius: 8px;" />`;
+        }
         contentEditorEl.value = writing.content;
         
         if (writing.tags && writing.tags.length > 0) {
@@ -199,6 +223,7 @@ async function loadWriting() {
         showAlert('Failed to load story', 'error');
     }
 }
+coverImageInputEl.addEventListener('change', handleCoverImageUpload);
 
 contentEditorEl.addEventListener('input', calculateStats);
 

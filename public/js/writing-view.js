@@ -261,21 +261,35 @@ function updateStarDisplay(rating) {
 /**
  * Submit rating
  */
+let isSubmittingRating = false; // Prevent duplicate submissions
+
 async function submitRating(rating) {
+    if (isSubmittingRating) {
+        console.log('Rating submission already in progress');
+        return;
+    }
+    
+    isSubmittingRating = true;
+    
     try {
         const response = await API.post(`/comments/writing/${writingId}`, {
-            content: '', // Empty content for rating-only comments
             rating: rating
         });
 
-        if (response.success) {
-            // Reload writing to get updated rating
-            loadWriting();
+        console.log('Full response:', response);
+        
+        if (response && response.success) {
+            await loadWriting();
             alert('Rating submitted successfully!');
+        } else {
+            console.error('Rating failed:', response);
+            alert('Failed to submit rating. Please try again.');
         }
     } catch (error) {
         console.error('Failed to submit rating:', error);
         alert('Failed to submit rating. Please try again.');
+    } finally {
+        isSubmittingRating = false;
     }
 }
 
@@ -346,7 +360,9 @@ async function loadComments() {
         
         if (response.success && response.data && response.data.length > 0) {
             displayComments(response.data);
-            commentCountEl.textContent = response.count;
+            // Count only comments with content
+            const commentsWithContent = response.data.filter(c => c.content && c.content.trim());
+            commentCountEl.textContent = commentsWithContent.length;
         } else {
             commentsEmptyEl.style.display = 'block';
             commentCountEl.textContent = '0';
@@ -364,7 +380,16 @@ async function loadComments() {
  * Display comments
  */
 function displayComments(comments) {
-    commentsListEl.innerHTML = comments.map(comment => {
+    // Filter out comments without content (rating-only)
+    const commentsWithContent = comments.filter(comment => comment.content && comment.content.trim());
+    
+    if (commentsWithContent.length === 0) {
+        commentsEmptyEl.style.display = 'block';
+        commentsListEl.style.display = 'none';
+        return;
+    }
+    
+    commentsListEl.innerHTML = commentsWithContent.map(comment => {
         const avatar = comment.author?.profilePictureURL || '/public/images/default-avatar.png';
         const name = comment.author?.username || 'Anonymous';
         const date = new Date(comment.createdAt).toLocaleDateString();
