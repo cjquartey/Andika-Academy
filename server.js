@@ -11,6 +11,7 @@ const writingRoutes = require('./server/routes/writingRoutes');
 const commentRoutes = require('./server/routes/commentRoutes');
 const bookmarkRoutes = require('./server/routes/bookmarkRoutes');
 const subscriptionRoutes = require('./server/routes/subscriptionRoutes');
+const adminRoutes = require('./server/routes/adminRoutes');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -30,6 +31,7 @@ app.use('/api/writings', writingRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Root route - serve homepage
 app.get('/', (req, res) => {
@@ -42,11 +44,24 @@ app.get('/:page', (req, res) => {
     const validPages = [
         'login', 'register', 'writings', 'writing-view', 
         'dashboard', 'writing-editor', 'my-writings',
-        'bookmarks', 'profile', 'subscription'
+        'bookmarks', 'profile', 'subscription',
+        'admin-dashboard', 'admin-users', 
+        'admin-transactions', 'admin-disputes'
     ];
     
     if (validPages.includes(page)) {
         res.sendFile(path.join(__dirname, 'views', `${page}.html`));
+    } else {
+        res.status(404).send('Page not found');
+    }
+});
+
+app.get('/admin/:page', (req, res) => {
+    const page = req.params.page;
+    const adminPages = ['dashboard', 'users', 'transactions', 'disputes'];
+    
+    if (adminPages.includes(page)) {
+        res.sendFile(path.join(__dirname, 'views', 'admin', `${page}.html`));
     } else {
         res.status(404).send('Page not found');
     }

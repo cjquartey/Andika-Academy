@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispute Resolution - Andika Academy Admin</title>
+    <link rel="stylesheet" href="/public/css/global.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body>
+    <!-- Admin Navbar -->
+    <div id="navbar-container"></div>
+
+    <main class="admin-page">
+        <div class="container">
+            <!-- Header -->
+            <div class="page-header">
+                <div>
+                    <h1>Dispute Resolution</h1>
+                    <p class="subtitle">Manage user disputes and refund requests</p>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="mini-stats-grid">
+                <div class="mini-stat-card">
+                    <div class="mini-stat-label">Open</div>
+                    <div class="mini-stat-value" id="stat-open">-</div>
+                </div>
+                <div class="mini-stat-card">
+                    <div class="mini-stat-label">In Progress</div>
+                    <div class="mini-stat-value" id="stat-progress">-</div>
+                </div>
+                <div class="mini-stat-card success">
+                    <div class="mini-stat-label">Resolved</div>
+                    <div class="mini-stat-value" id="stat-resolved">-</div>
+                </div>
+                <div class="mini-stat-card alert">
+                    <div class="mini-stat-label">Urgent</div>
+                    <div class="mini-stat-value" id="stat-urgent">-</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-bar">
+                <div class="search-box">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+                    </svg>
+                    <input type="text" id="search-disputes" placeholder="Search disputes...">
+                </div>
+
+                <div class="filter-group">
+                    <select id="filter-status" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="escalated">Escalated</option>
+                    </select>
+
+                    <select id="filter-type" class="filter-select">
+                        <option value="">All Types</option>
+                        <option value="payment_issue">Payment Issue</option>
+                        <option value="refund_request">Refund Request</option>
+                        <option value="unauthorized_charge">Unauthorized Charge</option>
+                        <option value="service_complaint">Service Complaint</option>
+                        <option value="other">Other</option>
+                    </select>
+
+                    <select id="filter-priority" class="filter-select">
+                        <option value="">All Priorities</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+
+                    <select id="filter-assigned" class="filter-select">
+                        <option value="">All Assignments</option>
+                        <option value="unassigned">Unassigned</option>
+                        <option value="me">My Disputes</option>
+                    </select>
+
+                    <button class="btn btn-outline" id="reset-filters">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Disputes Table -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Subject</th>
+                                <th>Type</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Assigned To</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="disputes-table-body">
+                            <tr>
+                                <td colspan="9" class="loading-row">
+                                    <div class="loading">Loading disputes...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="table-pagination">
+                    <div class="pagination-info">
+                        Showing <span id="showing-start">0</span> to <span id="showing-end">0</span> of <span id="total-disputes">0</span> disputes
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-sm btn-outline" id="prev-page" disabled>
+                            Previous
+                        </button>
+                        <span class="page-indicator">
+                            Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                        </span>
+                        <button class="btn btn-sm btn-outline" id="next-page" disabled>
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Dispute Details Modal -->
+    <div id="dispute-modal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2>Dispute Details</h2>
+                <button class="modal-close" onclick="closeDisputeModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="dispute-details-content">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Resolve Dispute Modal -->
+    <div id="resolve-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Resolve Dispute</h2>
+                <button class="modal-close" onclick="closeResolveModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="resolve-form">
+                    <input type="hidden" id="resolve-dispute-id">
+                    <div class="form-group">
+                        <label for="resolution-text">Resolution Details *</label>
+                        <textarea 
+                            id="resolution-text" 
+                            rows="4" 
+                            required
+                            placeholder="Explain how the dispute was resolved..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="refund-amount">Refund Amount (GHS)</label>
+                        <input 
+                            type="number" 
+                            id="refund-amount" 
+                            min="0" 
+                            step="0.01"
+                            placeholder="0.00">
+                        <small class="form-text">Leave empty if no refund is issued</small>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeResolveModal()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            Resolve Dispute
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Dispute Modal -->
+    <div id="reject-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reject Dispute</h2>
+                <button class="modal-close" onclick="closeRejectModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="reject-form">
+                    <input type="hidden" id="reject-dispute-id">
+                    <div class="form-group">
+                        <label for="rejection-reason">Reason for Rejection *</label>
+                        <textarea 
+                            id="rejection-reason" 
+                            rows="4" 
+                            required
+                            placeholder="Explain why this dispute is being rejected..."></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeRejectModal()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            Reject Dispute
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Scripts -->
+    <script src="/public/js/config.js"></script>
+    <script src="/public/js/auth.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/admin/disputes.js"></script>
+
+    <!-- Load Components -->
+    <script>
+        fetch('/views/components/admin-navbar.html')
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('navbar-container').innerHTML = html;
+            });
+
+        fetch('/views/components/footer.html')
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('footer-container').innerHTML = html;
+            });
+    </script>
+</body>
+</html>

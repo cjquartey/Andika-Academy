@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Andika Academy Admin</title>
+    <link rel="stylesheet" href="/public/css/global.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body>
+    <!-- Admin Navbar -->
+    <div id="navbar-container"></div>
+
+    <main class="admin-page">
+        <div class="container">
+            <!-- Header -->
+            <div class="page-header">
+                <div>
+                    <h1>User Management</h1>
+                    <p class="subtitle">Manage platform users and subscriptions</p>
+                </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="filter-bar">
+                <div class="search-box">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+                    </svg>
+                    <input type="text" id="search-users" placeholder="Search by name, email, or username...">
+                </div>
+
+                <div class="filter-group">
+                    <select id="filter-role" class="filter-select">
+                        <option value="">All Roles</option>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+
+                    <select id="filter-tier" class="filter-select">
+                        <option value="">All Tiers</option>
+                        <option value="basic">Basic</option>
+                        <option value="premium">Premium</option>
+                    </select>
+
+                    <select id="filter-status" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+
+                    <button class="btn btn-outline" id="reset-filters">
+                        Reset Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Tier</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <tr>
+                                <td colspan="7" class="loading-row">
+                                    <div class="loading">Loading users...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="table-pagination">
+                    <div class="pagination-info">
+                        Showing <span id="showing-start">0</span> to <span id="showing-end">0</span> of <span id="total-users">0</span> users
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-sm btn-outline" id="prev-page" disabled>
+                            Previous
+                        </button>
+                        <span class="page-indicator">
+                            Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                        </span>
+                        <button class="btn btn-sm btn-outline" id="next-page" disabled>
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Details Modal -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2>User Details</h2>
+                <button class="modal-close" onclick="closeUserModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="user-details-content">
+                <!-- User details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Scripts -->
+    <script src="/public/js/config.js"></script>
+    <script src="/public/js/auth.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/admin/users.js"></script>
+
+    <!-- Load Components -->
+    <script>
+        fetch('/views/components/admin-navbar.html')
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('navbar-container').innerHTML = html;
+            });
+
+        fetch('/views/components/footer.html')
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('footer-container').innerHTML = html;
+            });
+    </script>
+</body>
+</html>
