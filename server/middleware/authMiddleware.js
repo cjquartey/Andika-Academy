@@ -1,5 +1,6 @@
 const {body, validationResult} = require('express-validator');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 const validateRegister = [
     body('firstName')
@@ -55,14 +56,32 @@ const validateLogin = [
     }
 ];
 
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
     try{
         const authHeader = req.headers['authorization'];
-        if (!authHeader?.startsWith("Bearer ")) return res.sendStatus(401);
+        if (!authHeader?.startsWith("Bearer ")) {
+            return res.sendStatus(401);
+        }
 
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = {id: decoded.userId};
+
+        const user = await User.findById(decoded.userId);
+        
+        if (!user) {
+            return res.status(401).json({message: 'User not found'});
+        }
+        
+        // Attach full user object with subscriptionTier
+        req.user = {
+            id: user._id.toString(),
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            subscriptionTier: user.subscriptionTier,
+            subscriptionStatus: user.subscriptionStatus
+        };
+        
         next();
     } catch(err){
         return res.status(401).json({message: 'Invalid or expired token'});
