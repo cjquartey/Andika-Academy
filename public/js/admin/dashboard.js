@@ -49,16 +49,16 @@ async function apiRequest(endpoint, options = {}) {
 // Load dashboard statistics
 async function loadDashboardStats() {
     try {
-        const response = await apiRequest('/admin/analytics/overview');
+        const response = await apiRequest('/admin/analytics/dashboard');
         
         if (response.status === 'success') {
-            const stats = response.data;
+            const stats = response.data.overview || response.data;
             
             // Update stat cards
             document.getElementById('total-users').textContent = 
                 stats.totalUsers?.toLocaleString() || '0';
             document.getElementById('active-subscriptions').textContent = 
-                stats.activeSubscriptions?.toLocaleString() || '0';
+                stats.activeSubscribers?.toLocaleString() || '0';
             document.getElementById('total-revenue').textContent = 
                 `GHS ${stats.totalRevenue?.toFixed(2) || '0.00'}`;
             document.getElementById('pending-disputes').textContent = 
@@ -187,7 +187,7 @@ function renderRecentDisputes(disputes) {
             </div>
         </div>
     `).join('');
-};
+}
 
 // Utility: Format date
 function formatDate(dateString) {
@@ -206,10 +206,10 @@ function formatDate(dateString) {
     if (diffDays < 7) return `${diffDays}d ago`;
     
     return date.toLocaleDateString();
-};
+}
 
 // Utility: Show error
 function showError(message) {
     console.error(message);
     // TODO: Implement toast notification
-};
+}

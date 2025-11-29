@@ -56,19 +56,29 @@ async function apiRequest(endpoint, options = {}) {
 // Load transaction stats
 async function loadTransactionStats() {
     try {
-        const response = await apiRequest('/admin/analytics/overview');
+        const response = await apiRequest('/admin/analytics/dashboard');
         
         if (response.status === 'success') {
-            const stats = response.data;
+            const stats = response.data.overview || response.data;
+            
+            // Get transaction-specific stats
+            const txResponse = await apiRequest('/admin/transactions?limit=1');
+            const txStats = {
+                totalTransactions: stats.recentTransactions || 0,
+                totalRevenue: stats.totalRevenue || 0,
+                averageTransaction: stats.totalRevenue && stats.recentTransactions ? 
+                    (stats.totalRevenue / stats.recentTransactions) : 0,
+                flaggedTransactions: stats.flaggedTransactions || 0
+            };
             
             document.getElementById('total-transactions').textContent = 
-                stats.totalTransactions?.toLocaleString() || '0';
+                txStats.totalTransactions?.toLocaleString() || '0';
             document.getElementById('total-revenue').textContent = 
-                `GHS ${stats.totalRevenue?.toFixed(2) || '0.00'}`;
+                `GHS ${txStats.totalRevenue?.toFixed(2) || '0.00'}`;
             document.getElementById('avg-transaction').textContent = 
-                `GHS ${stats.averageTransaction?.toFixed(2) || '0.00'}`;
+                `GHS ${txStats.averageTransaction?.toFixed(2) || '0.00'}`;
             document.getElementById('flagged-count').textContent = 
-                stats.flaggedTransactions?.toLocaleString() || '0';
+                txStats.flaggedTransactions?.toLocaleString() || '0';
         }
     } catch (error) {
         console.error('Error loading stats:', error);

@@ -57,22 +57,47 @@ async function apiRequest(endpoint, options = {}) {
 // Load dispute stats
 async function loadDisputeStats() {
     try {
-        const response = await apiRequest('/admin/analytics/overview');
+        const response = await apiRequest('/admin/disputes/stats');
         
         if (response.status === 'success') {
             const stats = response.data;
             
+            // Calculate totals from breakdowns
+            let totalDisputes = 0;
+            let openDisputes = 0;
+            let resolvedDisputes = 0;
+            
+            if (stats.byStatus) {
+                stats.byStatus.forEach(item => {
+                    totalDisputes += item.count;
+                    if (item._id === 'open' || item._id === 'in_progress') {
+                        openDisputes += item.count;
+                    }
+                    if (item._id === 'resolved') {
+                        resolvedDisputes = item.count;
+                    }
+                });
+            }
+            
             document.getElementById('total-disputes').textContent = 
-                stats.totalDisputes?.toLocaleString() || '0';
+                totalDisputes?.toLocaleString() || '0';
             document.getElementById('open-disputes').textContent = 
-                stats.openDisputes?.toLocaleString() || '0';
+                openDisputes?.toLocaleString() || '0';
             document.getElementById('resolved-disputes').textContent = 
-                stats.resolvedDisputes?.toLocaleString() || '0';
+                resolvedDisputes?.toLocaleString() || '0';
+            
+            // For disputed amount, we need to calculate from transactions
+            // This will be shown as '0.00' for now unless we get it from elsewhere
             document.getElementById('disputed-amount').textContent = 
-                `GHS ${stats.disputedAmount?.toFixed(2) || '0.00'}`;
+                'GHS 0.00'; // TODO: Calculate from transaction data
         }
     } catch (error) {
         console.error('Error loading stats:', error);
+        // Set default values on error
+        document.getElementById('total-disputes').textContent = '0';
+        document.getElementById('open-disputes').textContent = '0';
+        document.getElementById('resolved-disputes').textContent = '0';
+        document.getElementById('disputed-amount').textContent = 'GHS 0.00';
     }
 }
 
