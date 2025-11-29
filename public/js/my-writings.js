@@ -31,7 +31,7 @@ function createWritingCard(writing) {
     
     return `
         <div class="writing-card">
-            <img src="${writing.coverImageURL || '/public/images/placeholder.jpg'}" alt="${writing.title}" class="writing-cover">
+            <img src="${writing.coverImageURL || '/public/uploads/covers/default-cover.jpg'}" alt="${writing.title}" class="writing-cover">
             <div class="writing-content">
                 <div class="writing-status-row">
                     <span class="writing-status status-${writing.status}">${writing.status}</span>

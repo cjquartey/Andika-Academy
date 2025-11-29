@@ -121,6 +121,11 @@ function displayWriting(writing) {
         coverImageEl.alt = writing.title;
         coverSectionEl.style.display = 'block';
     }
+    else {
+        coverImageEl.src = '/public/uploads/covers/default-cover.jpg';
+        coverImageEl.alt = writing.title;
+        coverSectionEl.style.display = 'block';
+    }
 
     // Breadcrumb
     breadcrumbCategoryEl.textContent = CONFIG.CATEGORIES[writing.category];
@@ -137,7 +142,7 @@ function displayWriting(writing) {
     }
 
     // Author info
-    const authorAvatar = writing.author?.profilePictureURL || '/public/images/default-avatar.png';
+    const authorAvatar = writing.author?.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg';
     const authorName = writing.author?.username || 'Anonymous';
     authorAvatarEl.src = authorAvatar;
     authorAvatarEl.alt = authorName;
@@ -390,7 +395,7 @@ function displayComments(comments) {
     }
     
     commentsListEl.innerHTML = commentsWithContent.map(comment => {
-        const avatar = comment.author?.profilePictureURL || '/public/images/default-avatar.png';
+        const avatar = comment.author?.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg';
         const name = comment.author?.username || 'Anonymous';
         const date = new Date(comment.createdAt).toLocaleDateString();
 

@@ -34,8 +34,8 @@ const emptyMessageEl = document.getElementById('empty-message');
  * Create writing card HTML
  */
 function createWritingCard(writing) {
-    const coverImage = writing.coverImageURL || '/public/images/placeholder-cover.jpg';
-    const authorAvatar = writing.author?.profilePictureURL || '/public/images/default-avatar.png';
+    const coverImage = writing.coverImageURL || '/public/uploads/covers/default-cover.jpg';
+    const authorAvatar = writing.author?.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg';
     const authorName = writing.author?.username || 'Anonymous';
     const isPremium = writing.accessLevel === 'premium';
 
@@ -56,7 +56,7 @@ function createWritingCard(writing) {
                 <p class="writing-excerpt">${writing.excerpt || writing.description || 'No description available.'}</p>
                 <div class="writing-meta">
                     <div class="writing-author">
-                        <img src="${authorAvatar}" alt="${authorName}" class="writing-author-avatar" onerror="this.src='/public/images/default-avatar.png'">
+                        <img src="${authorAvatar}" alt="${authorName}" class="writing-author-avatar" onerror="this.src='/public/images/default-avatar.jpg'">
                         <span>${authorName}</span>
                     </div>
                     <div class="writing-stats">

@@ -74,8 +74,7 @@ async function loadProfile() {
                 if (user.profilePictureURL) {
                     avatarEl.innerHTML = `<img src="${user.profilePictureURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 } else {
-                    const initial = (user.firstName || user.username || 'U').charAt(0).toUpperCase();
-                    avatarEl.textContent = initial;
+                    avatarEl.innerHTML = `<img src="/public/uploads/profiles/default-avatar.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 }
             }
             

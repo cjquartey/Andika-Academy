@@ -22,8 +22,8 @@ function formatDate(dateString) {
  * Create writing card HTML
  */
 function createWritingCard(writing) {
-    const coverImage = writing.coverImageURL || '/public/images/placeholder-cover.jpg';
-    const authorAvatar = writing.author?.profilePictureURL || '/public/images/default-avatar.png';
+    const coverImage = writing.coverImageURL || '/public/uploads/covers/default-cover.jpg';
+    const authorAvatar = writing.author?.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg';
     const authorName = writing.author?.username || 'Anonymous';
     const isPremium = writing.accessLevel === 'premium';
 

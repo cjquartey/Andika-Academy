@@ -84,7 +84,7 @@ async function loadRecentWritings() {
                 
                 return `
                     <a href="${link}" class="writing-card">
-                        <img src="${writing.coverImageURL || '/public/images/placeholder.jpg'}" alt="${writing.title}" class="writing-cover">
+                        <img src="${writing.coverImageURL || '/public/uploads/covers/default-cover.jpg'}" alt="${writing.title}" class="writing-cover">
                         <div class="writing-content">
                             <span class="writing-status ${writing.status === 'published' ? 'status-published' : 'status-draft'}">${writing.status}</span>
                             <h3 class="writing-title">${writing.title}</h3>
