@@ -54,15 +54,26 @@ async function loadDashboardStats() {
         if (response.status === 'success') {
             const stats = response.data.overview || response.data;
             
-            // Update stat cards
-            document.getElementById('total-users').textContent = 
-                stats.totalUsers?.toLocaleString() || '0';
-            document.getElementById('active-subscriptions').textContent = 
-                stats.activeSubscribers?.toLocaleString() || '0';
-            document.getElementById('total-revenue').textContent = 
-                `GHS ${stats.totalRevenue?.toFixed(2) || '0.00'}`;
-            document.getElementById('pending-disputes').textContent = 
-                stats.pendingDisputes?.toLocaleString() || '0';
+            // Update stat cards with null checks
+            const totalUsersEl = document.getElementById('total-users');
+            if (totalUsersEl) {
+                totalUsersEl.textContent = stats.totalUsers?.toLocaleString() || '0';
+            }
+            
+            const activeSubscribersEl = document.getElementById('active-subscribers');
+            if (activeSubscribersEl) {
+                activeSubscribersEl.textContent = stats.activeSubscribers?.toLocaleString() || '0';
+            }
+            
+            const totalRevenueEl = document.getElementById('total-revenue');
+            if (totalRevenueEl) {
+                totalRevenueEl.textContent = `GHS ${stats.totalRevenue?.toFixed(2) || '0.00'}`;
+            }
+            
+            const pendingDisputesEl = document.getElementById('pending-disputes');
+            if (pendingDisputesEl) {
+                pendingDisputesEl.textContent = stats.pendingDisputes?.toLocaleString() || '0';
+            }
         }
     } catch (error) {
         console.error('Error loading dashboard stats:', error);

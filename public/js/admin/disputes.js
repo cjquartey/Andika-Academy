@@ -63,41 +63,54 @@ async function loadDisputeStats() {
             const stats = response.data;
             
             // Calculate totals from breakdowns
-            let totalDisputes = 0;
-            let openDisputes = 0;
-            let resolvedDisputes = 0;
+            let openCount = 0;
+            let inProgressCount = 0;
+            let resolvedCount = 0;
+            let urgentCount = 0;
             
             if (stats.byStatus) {
                 stats.byStatus.forEach(item => {
-                    totalDisputes += item.count;
-                    if (item._id === 'open' || item._id === 'in_progress') {
-                        openDisputes += item.count;
-                    }
-                    if (item._id === 'resolved') {
-                        resolvedDisputes = item.count;
-                    }
+                    if (item._id === 'open') openCount = item.count;
+                    if (item._id === 'in_progress') inProgressCount = item.count;
+                    if (item._id === 'resolved') resolvedCount = item.count;
                 });
             }
             
-            document.getElementById('total-disputes').textContent = 
-                totalDisputes?.toLocaleString() || '0';
-            document.getElementById('open-disputes').textContent = 
-                openDisputes?.toLocaleString() || '0';
-            document.getElementById('resolved-disputes').textContent = 
-                resolvedDisputes?.toLocaleString() || '0';
+            if (stats.byPriority) {
+                stats.byPriority.forEach(item => {
+                    if (item._id === 'urgent') urgentCount = item.count;
+                });
+            }
             
-            // For disputed amount, we need to calculate from transactions
-            // This will be shown as '0.00' for now unless we get it from elsewhere
-            document.getElementById('disputed-amount').textContent = 
-                'GHS 0.00'; // TODO: Calculate from transaction data
+            // Update stat cards with null checks (using correct IDs)
+            const openEl = document.getElementById('stat-open');
+            if (openEl) {
+                openEl.textContent = openCount?.toLocaleString() || '0';
+            }
+            
+            const progressEl = document.getElementById('stat-progress');
+            if (progressEl) {
+                progressEl.textContent = inProgressCount?.toLocaleString() || '0';
+            }
+            
+            const resolvedEl = document.getElementById('stat-resolved');
+            if (resolvedEl) {
+                resolvedEl.textContent = resolvedCount?.toLocaleString() || '0';
+            }
+            
+            const urgentEl = document.getElementById('stat-urgent');
+            if (urgentEl) {
+                urgentEl.textContent = urgentCount?.toLocaleString() || '0';
+            }
         }
     } catch (error) {
         console.error('Error loading stats:', error);
         // Set default values on error
-        document.getElementById('total-disputes').textContent = '0';
-        document.getElementById('open-disputes').textContent = '0';
-        document.getElementById('resolved-disputes').textContent = '0';
-        document.getElementById('disputed-amount').textContent = 'GHS 0.00';
+        const ids = ['stat-open', 'stat-progress', 'stat-resolved', 'stat-urgent'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '0';
+        });
     }
 }
 

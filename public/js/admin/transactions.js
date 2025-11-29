@@ -62,7 +62,6 @@ async function loadTransactionStats() {
             const stats = response.data.overview || response.data;
             
             // Get transaction-specific stats
-            const txResponse = await apiRequest('/admin/transactions?limit=1');
             const txStats = {
                 totalTransactions: stats.recentTransactions || 0,
                 totalRevenue: stats.totalRevenue || 0,
@@ -71,14 +70,26 @@ async function loadTransactionStats() {
                 flaggedTransactions: stats.flaggedTransactions || 0
             };
             
-            document.getElementById('total-transactions').textContent = 
-                txStats.totalTransactions?.toLocaleString() || '0';
-            document.getElementById('total-revenue').textContent = 
-                `GHS ${txStats.totalRevenue?.toFixed(2) || '0.00'}`;
-            document.getElementById('avg-transaction').textContent = 
-                `GHS ${txStats.averageTransaction?.toFixed(2) || '0.00'}`;
-            document.getElementById('flagged-count').textContent = 
-                txStats.flaggedTransactions?.toLocaleString() || '0';
+            // Update stat cards with correct IDs and null checks
+            const totalEl = document.getElementById('stat-total');
+            if (totalEl) {
+                totalEl.textContent = txStats.totalTransactions?.toLocaleString() || '0';
+            }
+            
+            const revenueEl = document.getElementById('stat-revenue');
+            if (revenueEl) {
+                revenueEl.textContent = `GHS ${txStats.totalRevenue?.toFixed(2) || '0.00'}`;
+            }
+            
+            const avgEl = document.getElementById('stat-avg');
+            if (avgEl) {
+                avgEl.textContent = `GHS ${txStats.averageTransaction?.toFixed(2) || '0.00'}`;
+            }
+            
+            const flaggedEl = document.getElementById('stat-flagged');
+            if (flaggedEl) {
+                flaggedEl.textContent = txStats.flaggedTransactions?.toLocaleString() || '0';
+            }
         }
     } catch (error) {
         console.error('Error loading stats:', error);
