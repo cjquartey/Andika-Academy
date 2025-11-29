@@ -80,7 +80,12 @@ const Auth = {
     // Redirect to dashboard if already authenticated
     requireGuest() {
         if (this.isAuthenticated()) {
-            window.location.href = '/views/dashboard.html';
+            const user = this.getUser();
+            if (user && user.role === 'admin') {
+                window.location.href = '/views/admin/dashboard.html';
+            } else {
+                window.location.href = '/views/dashboard.html';
+            }
             return false;
         }
         return true;
@@ -89,50 +94,6 @@ const Auth = {
     // Get authorization header
     getAuthHeader() {
         const token = this.getToken();
-        return token ? `Bearer ${token}` : '';
-    },
-
-    // Initialize auth state on page load
-    async init() {
-        if (this.isAuthenticated()) {
-            await this.refreshUser();
-            this.updateNavbar();
-        } else {
-            this.updateNavbar();
-        }
-    },
-
-    // Update navbar based on auth state
-    updateNavbar() {
-        const authLinks = document.getElementById('auth-links');
-        const guestLinks = document.getElementById('guest-links');
-        const userInfo = document.getElementById('user-info');
-
-        if (!authLinks || !guestLinks) return;
-
-        if (this.isAuthenticated()) {
-            const user = this.getUser();
-            
-            guestLinks.style.display = 'none';
-            authLinks.style.display = 'flex';
-
-            if (userInfo && user) {
-                const avatar = user.profilePictureURL || '/public/images/default-avatar.png';
-                const displayName = user.username || user.firstName;
-                
-                userInfo.innerHTML = `
-                    <img src="${avatar}" alt="${displayName}" class="user-avatar">
-                    <span class="user-name">${displayName}</span>
-                `;
-            }
-        } else {
-            guestLinks.style.display = 'flex';
-            authLinks.style.display = 'none';
-        }
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
     }
 };
-
-// Initialize auth on page load
-document.addEventListener('DOMContentLoaded', () => {
-    Auth.init();
-});

@@ -76,7 +76,7 @@ mobileToggle?.addEventListener('click', () => {
 });
 
 // Load admin name
-const adminUser = JSON.parse(localStorage.getItem('user') || '{}');
+const adminUser = JSON.parse(localStorage.getItem('andika_user_data') || '{}');
 const adminNameEl = document.getElementById('admin-name');
 if (adminNameEl && adminUser.username) {
     adminNameEl.textContent = adminUser.username;
@@ -85,9 +85,9 @@ if (adminNameEl && adminUser.username) {
 // Logout handler
 function handleAdminLogout() {
     if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
+        localStorage.removeItem('andika_auth_token');
+        localStorage.removeItem('andika_user_data');
+        window.location.href = '/views/login.html';
     }
 }
 </script>

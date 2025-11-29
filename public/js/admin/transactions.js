@@ -14,9 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkAdminAuth() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('andika_user_data') || '{}');
     if (!user || user.role !== 'admin') {
-        window.location.href = '/login';
+        window.location.href = '/views/login.html';
     }
 }
 

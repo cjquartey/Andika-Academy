@@ -15,9 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Check if user is admin
 function checkAdminAuth() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('andika_user_data') || '{}');
+    
     if (!user || user.role !== 'admin') {
-        window.location.href = '/login';
+        window.location.href = '/views/login.html';
         return;
     }
 }
@@ -75,13 +76,35 @@ async function loadOverviewStats(period) {
             
             // Update urgent disputes
             const urgentText = overview.flaggedTransactions > 0 
-                ? `${overview.flaggedTransactions} flagged items` 
-                : 'No issues';
+                ? `${overview.flaggedTransactions} flagged transactions need review`
+                : 'No urgent items';
+            
             document.getElementById('urgent-disputes').textContent = urgentText;
         }
     } catch (error) {
-        console.error('Error loading overview:', error);
+        console.error('Error loading stats:', error);
     }
+}
+
+// Calculate growth percentage
+function calculateGrowth(growth, metric) {
+    if (!growth || !growth[metric]) return 0;
+    const { current, previous } = growth[metric];
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return ((current - previous) / previous) * 100;
+}
+
+// Update stat change indicator
+function updateStatChange(elementId, changePercent) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const isPositive = changePercent >= 0;
+    const arrow = isPositive ? '↑' : '↓';
+    const className = isPositive ? 'stat-increase' : 'stat-decrease';
+    
+    element.textContent = `${arrow} ${Math.abs(changePercent).toFixed(1)}%`;
+    element.className = `stat-change ${className}`;
 }
 
 // Load revenue chart
@@ -90,7 +113,7 @@ async function loadRevenueChart(groupBy = 'month') {
         const response = await apiRequest(`/admin/analytics/revenue?groupBy=${groupBy}`);
         
         if (response.status === 'success') {
-            const { byPeriod } = response.data;
+            const { labels, values } = response.data;
             
             const ctx = document.getElementById('revenue-chart');
             if (!ctx) return;
@@ -100,16 +123,17 @@ async function loadRevenueChart(groupBy = 'month') {
                 revenueChart.destroy();
             }
             
+            // Create new chart
             revenueChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: byPeriod.map(d => d._id),
+                    labels: labels,
                     datasets: [{
                         label: 'Revenue (GHS)',
-                        data: byPeriod.map(d => d.revenue),
-                        borderColor: '#E6B57E',
-                        backgroundColor: 'rgba(230, 181, 126, 0.1)',
-                        tension: 0.4,
+                        data: values,
+                        borderColor: 'rgb(234, 88, 12)',
+                        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+                        tension: 0.3,
                         fill: true
                     }]
                 },
@@ -125,7 +149,9 @@ async function loadRevenueChart(groupBy = 'month') {
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: value => `GHS ${value}`
+                                callback: function(value) {
+                                    return 'GHS ' + value.toFixed(2);
+                                }
                             }
                         }
                     }
@@ -140,10 +166,10 @@ async function loadRevenueChart(groupBy = 'month') {
 // Load user growth chart
 async function loadUserGrowthChart(period) {
     try {
-        const response = await apiRequest('/admin/analytics/users');
+        const response = await apiRequest(`/admin/analytics/users?period=${period}`);
         
         if (response.status === 'success') {
-            const { growth } = response.data;
+            const { labels, values } = response.data;
             
             const ctx = document.getElementById('user-growth-chart');
             if (!ctx) return;
@@ -153,14 +179,17 @@ async function loadUserGrowthChart(period) {
                 userGrowthChart.destroy();
             }
             
+            // Create new chart
             userGrowthChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: growth.map(d => d._id),
+                    labels: labels,
                     datasets: [{
                         label: 'New Users',
-                        data: growth.map(d => d.count),
-                        backgroundColor: '#0E1F3D',
+                        data: values,
+                        backgroundColor: 'rgba(30, 58, 138, 0.8)',
+                        borderColor: 'rgb(30, 58, 138)',
+                        borderWidth: 1
                     }]
                 },
                 options: {
@@ -190,128 +219,138 @@ async function loadUserGrowthChart(period) {
 // Load recent activity
 async function loadRecentActivity() {
     try {
-        await Promise.all([
-            loadRecentTransactions(),
-            loadFlaggedTransactions(),
-            loadRecentDisputes()
-        ]);
-    } catch (error) {
-        console.error('Error loading activity:', error);
-    }
-}
-
-// Load recent transactions
-async function loadRecentTransactions() {
-    try {
-        const response = await apiRequest('/admin/transactions?limit=5&sortBy=createdAt&order=desc');
-        const container = document.getElementById('recent-transactions');
+        // Load recent transactions
+        const transactionsResponse = await apiRequest('/admin/transactions?limit=5&sort=createdAt:desc');
+        if (transactionsResponse.status === 'success') {
+            renderRecentTransactions(transactionsResponse.data.transactions);
+        }
         
-        if (response.status === 'success' && response.data.transactions.length > 0) {
-            container.innerHTML = response.data.transactions.map(tx => `
-                <div class="activity-item">
-                    <div class="activity-info">
-                        <div class="activity-title">${tx.user?.username || 'Unknown'}</div>
-                        <div class="activity-meta">${tx.type} • ${formatDate(tx.createdAt)}</div>
-                    </div>
-                    <div class="activity-amount">GHS ${tx.amount.toFixed(2)}</div>
-                </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<div class="empty-state">No recent transactions</div>';
+        // Load flagged transactions
+        const flaggedResponse = await apiRequest('/admin/transactions?status=flagged&limit=5');
+        if (flaggedResponse.status === 'success') {
+            renderFlaggedTransactions(flaggedResponse.data.transactions);
+        }
+        
+        // Load recent disputes
+        const disputesResponse = await apiRequest('/admin/disputes?limit=5&sort=createdAt:desc');
+        if (disputesResponse.status === 'success') {
+            renderRecentDisputes(disputesResponse.data.disputes);
         }
     } catch (error) {
-        console.error('Error loading recent transactions:', error);
+        console.error('Error loading recent activity:', error);
     }
 }
 
-// Load flagged transactions
-async function loadFlaggedTransactions() {
-    try {
-        const response = await apiRequest('/admin/transactions?status=flagged&limit=5');
-        const container = document.getElementById('flagged-transactions');
-        
-        if (response.status === 'success' && response.data.transactions.length > 0) {
-            container.innerHTML = response.data.transactions.map(tx => `
-                <div class="activity-item flagged">
-                    <div class="activity-info">
-                        <div class="activity-title">${tx.user?.username || 'Unknown'}</div>
-                        <div class="activity-meta">${tx.flagReason || 'Flagged'}</div>
-                    </div>
-                    <div class="activity-amount">GHS ${tx.amount.toFixed(2)}</div>
-                </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<div class="empty-state">No flagged transactions</div>';
-        }
-    } catch (error) {
-        console.error('Error loading flagged transactions:', error);
-    }
-}
-
-// Load recent disputes
-async function loadRecentDisputes() {
-    try {
-        const response = await apiRequest('/admin/disputes?limit=5&sortBy=createdAt&order=desc');
-        const container = document.getElementById('recent-disputes');
-        
-        if (response.status === 'success' && response.data.disputes.length > 0) {
-            container.innerHTML = response.data.disputes.map(dispute => `
-                <div class="activity-item ${dispute.priority === 'urgent' ? 'urgent' : ''}">
-                    <div class="activity-info">
-                        <div class="activity-title">${dispute.subject}</div>
-                        <div class="activity-meta">${dispute.user?.username || 'Unknown'} • ${dispute.status}</div>
-                    </div>
-                    <span class="badge priority-${dispute.priority}">${dispute.priority}</span>
-                </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<div class="empty-state">No recent disputes</div>';
-        }
-    } catch (error) {
-        console.error('Error loading recent disputes:', error);
-    }
-}
-
-// Helper: Calculate growth percentage
-function calculateGrowth(data, type) {
-    // Simple mock calculation - implement actual logic based on your data
-    const randomGrowth = (Math.random() * 20 - 5).toFixed(1);
-    return randomGrowth;
-}
-
-// Helper: Update stat change display
-function updateStatChange(elementId, change) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
+// Render recent transactions
+function renderRecentTransactions(transactions) {
+    const container = document.getElementById('recent-transactions');
+    if (!container) return;
     
-    const changeValue = parseFloat(change);
-    const isPositive = changeValue > 0;
+    if (!transactions || transactions.length === 0) {
+        container.innerHTML = '<div class="empty-state">No recent transactions</div>';
+        return;
+    }
     
-    element.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
-    element.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="${isPositive ? 'M8 3l5 5H9v5H7V8H3l5-5z' : 'M8 13l-5-5h4V3h2v5h4l-5 5z'}"/>
-        </svg>
-        ${Math.abs(changeValue)}% from last period
-    `;
+    container.innerHTML = transactions.map(t => `
+        <div class="activity-item">
+            <div class="activity-info">
+                <strong>${t.user?.username || 'Unknown'}</strong>
+                <span>${t.type} - GHS ${t.amount.toFixed(2)}</span>
+            </div>
+            <div class="activity-meta">
+                <span class="badge badge-${t.status}">${t.status}</span>
+                <span class="timestamp">${formatDate(t.createdAt)}</span>
+            </div>
+        </div>
+    `).join('');
 }
 
-// Helper: Format date
+// Render flagged transactions
+function renderFlaggedTransactions(transactions) {
+    const container = document.getElementById('flagged-transactions');
+    if (!container) return;
+    
+    if (!transactions || transactions.length === 0) {
+        container.innerHTML = '<div class="empty-state">No flagged transactions</div>';
+        return;
+    }
+    
+    container.innerHTML = transactions.map(t => `
+        <div class="activity-item urgent">
+            <div class="activity-info">
+                <strong>${t.user?.username || 'Unknown'}</strong>
+                <span>${t.type} - GHS ${t.amount.toFixed(2)}</span>
+            </div>
+            <div class="activity-meta">
+                <span class="badge badge-danger">Flagged</span>
+                <a href="/views/admin/transactions.html?id=${t._id}" class="view-link">Review →</a>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Render recent disputes
+function renderRecentDisputes(disputes) {
+    const container = document.getElementById('recent-disputes');
+    if (!container) return;
+    
+    if (!disputes || disputes.length === 0) {
+        container.innerHTML = '<div class="empty-state">No recent disputes</div>';
+        return;
+    }
+    
+    container.innerHTML = disputes.map(d => `
+        <div class="activity-item">
+            <div class="activity-info">
+                <strong>${d.transaction?.user?.username || 'Unknown'}</strong>
+                <span>${d.reason}</span>
+            </div>
+            <div class="activity-meta">
+                <span class="badge badge-${d.status}">${d.status}</span>
+                <a href="/views/admin/disputes.html?id=${d._id}" class="view-link">View →</a>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Utility: API request helper
+async function apiRequest(endpoint) {
+    const token = localStorage.getItem('andika_auth_token');
+    const response = await fetch(`/api${endpoint}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+
+// Utility: Format date
 function formatDate(dateString) {
     const date = new Date(dateString);
     const now = new Date();
-    const diff = now - date;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
     
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days} days ago`;
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
     return date.toLocaleDateString();
 }
 
-// Helper: Show error message
+// Utility: Show error
 function showError(message) {
-    // Implement toast notification or alert
+    // You can implement a toast notification here
     console.error(message);
-    alert(message);
 }

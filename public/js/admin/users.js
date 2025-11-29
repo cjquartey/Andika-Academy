@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkAdminAuth() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('andika_user_data') || '{}');
     if (!user || user.role !== 'admin') {
-        window.location.href = '/login';
+        window.location.href = '/views/login.html';
     }
 }
 
@@ -93,53 +93,59 @@ async function loadUsers() {
 
 function renderUsersTable(users) {
     const tbody = document.getElementById('users-table-body');
+    if (!tbody) return;
     
-    if (users.length === 0) {
+    if (!users || users.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align: center; padding: 3rem;">
-                    <div class="empty-state">
-                        <p>No users found</p>
-                    </div>
-                </td>
+                <td colspan="7" class="text-center">No users found</td>
             </tr>
         `;
         return;
     }
-
+    
     tbody.innerHTML = users.map(user => `
         <tr>
             <td>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--deep-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
-                        ${user.firstName?.charAt(0) || user.username?.charAt(0) || 'U'}
-                    </div>
+                <div class="user-info">
+                    <img src="${user.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg'}" alt="${user.username}" class="user-avatar-sm">
                     <div>
-                        <div style="font-weight: 600;">${user.username}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-light);">${user.firstName} ${user.lastName}</div>
+                        <strong>${user.username}</strong>
+                        <small>${user.email}</small>
                     </div>
                 </div>
             </td>
-            <td>${user.email}</td>
-            <td><span class="badge ${user.role === 'admin' ? 'status-flagged' : 'status-active'}">${user.role}</span></td>
-            <td><span class="badge tier-${user.subscriptionTier}">${user.subscriptionTier}</span></td>
-            <td><span class="badge status-${user.accountStatus}">${user.accountStatus}</span></td>
-            <td>${formatDate(user.createdAt)}</td>
             <td>
-                <div class="table-actions">
-                    <button class="action-btn view" onclick="viewUserDetails('${user._id}')">
+                <span class="badge badge-${user.role === 'admin' ? 'warning' : 'info'}">
+                    ${user.role}
+                </span>
+            </td>
+            <td>
+                <span class="badge badge-${user.subscriptionTier === 'premium' ? 'success' : 'secondary'}">
+                    ${user.subscriptionTier}
+                </span>
+            </td>
+            <td>
+                <span class="badge badge-${user.accountStatus === 'active' ? 'success' : 'danger'}">
+                    ${user.accountStatus}
+                </span>
+            </td>
+            <td>${formatDate(user.createdAt)}</td>
+            <td>${formatDate(user.lastLoginAt)}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-outline" onclick="viewUser('${user._id}')">
                         View
                     </button>
-                    ${user.accountStatus === 'active' && user.role !== 'admin' ? `
-                        <button class="action-btn flag" onclick="suspendUser('${user._id}')">
+                    ${user.accountStatus === 'active' ? `
+                        <button class="btn btn-sm btn-danger" onclick="suspendUser('${user._id}')">
                             Suspend
                         </button>
-                    ` : ''}
-                    ${user.accountStatus === 'suspended' ? `
-                        <button class="action-btn approve" onclick="reinstateUser('${user._id}')">
+                    ` : `
+                        <button class="btn btn-sm btn-success" onclick="reinstateUser('${user._id}')">
                             Reinstate
                         </button>
-                    ` : ''}
+                    `}
                 </div>
             </td>
         </tr>
@@ -147,23 +153,22 @@ function renderUsersTable(users) {
 }
 
 function updatePagination(pagination) {
-    document.getElementById('showing-start').textContent = ((pagination.page - 1) * pagination.limit + 1);
-    document.getElementById('showing-end').textContent = Math.min(pagination.page * pagination.limit, pagination.total);
-    document.getElementById('total-users').textContent = pagination.total;
     document.getElementById('current-page').textContent = pagination.page;
     document.getElementById('total-pages').textContent = pagination.pages;
     
-    document.getElementById('prev-page').disabled = pagination.page === 1;
-    document.getElementById('next-page').disabled = pagination.page === pagination.pages;
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    
+    prevBtn.disabled = pagination.page === 1;
+    nextBtn.disabled = pagination.page === pagination.pages;
 }
 
-async function viewUserDetails(userId) {
+async function viewUser(userId) {
     try {
         const response = await apiRequest(`/admin/users/${userId}`);
         
         if (response.status === 'success') {
-            const { user, stats } = response.data;
-            showUserModal(user, stats);
+            showUserModal(response.data.user);
         }
     } catch (error) {
         console.error('Error loading user details:', error);
@@ -171,118 +176,72 @@ async function viewUserDetails(userId) {
     }
 }
 
-function showUserModal(user, stats) {
+function showUserModal(user) {
     const modal = document.getElementById('user-modal');
     const content = document.getElementById('user-details-content');
     
     content.innerHTML = `
-        <div class="detail-section">
-            <h3>User Information</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <div class="detail-label">Username</div>
-                    <div class="detail-value">${user.username}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Email</div>
-                    <div class="detail-value">${user.email}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Full Name</div>
-                    <div class="detail-value">${user.firstName} ${user.lastName}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Role</div>
-                    <div class="detail-value"><span class="badge ${user.role === 'admin' ? 'status-flagged' : 'status-active'}">${user.role}</span></div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Subscription Tier</div>
-                    <div class="detail-value"><span class="badge tier-${user.subscriptionTier}">${user.subscriptionTier}</span></div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Account Status</div>
-                    <div class="detail-value"><span class="badge status-${user.accountStatus}">${user.accountStatus}</span></div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Joined</div>
-                    <div class="detail-value">${new Date(user.createdAt).toLocaleDateString()}</div>
-                </div>
+        <div class="user-details-grid">
+            <div class="detail-section">
+                <h3>Personal Information</h3>
+                <dl>
+                    <dt>Full Name:</dt>
+                    <dd>${user.firstName} ${user.lastName}</dd>
+                    <dt>Username:</dt>
+                    <dd>${user.username}</dd>
+                    <dt>Email:</dt>
+                    <dd>${user.email}</dd>
+                    <dt>Bio:</dt>
+                    <dd>${user.bio || 'Not provided'}</dd>
+                </dl>
             </div>
-        </div>
-
-        <div class="detail-section">
-            <h3>Statistics</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <div class="detail-label">Total Writings</div>
-                    <div class="detail-value">${stats.totalWritings}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Total Spent</div>
-                    <div class="detail-value">GHS ${stats.totalSpent.toFixed(2)}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Monthly Publications</div>
-                    <div class="detail-value">${user.monthlyPublications}</div>
-                </div>
+            
+            <div class="detail-section">
+                <h3>Account Details</h3>
+                <dl>
+                    <dt>Role:</dt>
+                    <dd><span class="badge badge-${user.role === 'admin' ? 'warning' : 'info'}">${user.role}</span></dd>
+                    <dt>Subscription:</dt>
+                    <dd><span class="badge badge-${user.subscriptionTier === 'premium' ? 'success' : 'secondary'}">${user.subscriptionTier}</span></dd>
+                    <dt>Status:</dt>
+                    <dd><span class="badge badge-${user.accountStatus === 'active' ? 'success' : 'danger'}">${user.accountStatus}</span></dd>
+                    <dt>Joined:</dt>
+                    <dd>${new Date(user.createdAt).toLocaleDateString()}</dd>
+                    <dt>Last Login:</dt>
+                    <dd>${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Never'}</dd>
+                </dl>
             </div>
-        </div>
-
-        ${stats.recentTransactions.length > 0 ? `
-        <div class="detail-section">
-            <h3>Recent Transactions</h3>
-            ${stats.recentTransactions.map(tx => `
-                <div style="padding: 0.75rem; background: #f8f9fa; border-radius: 0.5rem; margin-bottom: 0.5rem;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>${tx.type} - ${tx.status}</span>
-                        <strong>GHS ${tx.amount.toFixed(2)}</strong>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.25rem;">
-                        ${new Date(tx.createdAt).toLocaleDateString()}
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-        ` : ''}
-
-        <div class="modal-actions">
-            ${user.accountStatus === 'active' && user.role !== 'admin' ? `
-                <button class="btn btn-danger" onclick="suspendUser('${user._id}'); closeUserModal();">
-                    Suspend User
-                </button>
-            ` : ''}
-            ${user.accountStatus === 'suspended' ? `
-                <button class="btn btn-success" onclick="reinstateUser('${user._id}'); closeUserModal();">
-                    Reinstate User
-                </button>
-            ` : ''}
-            ${user.role !== 'admin' ? `
-                <button class="btn btn-outline" onclick="confirmDeleteUser('${user._id}')">
-                    Delete User
-                </button>
-            ` : ''}
-            <button class="btn btn-primary" onclick="closeUserModal()">
-                Close
-            </button>
+            
+            <div class="detail-section">
+                <h3>Activity Statistics</h3>
+                <dl>
+                    <dt>Total Writings:</dt>
+                    <dd>${user.stats?.totalWritings || 0}</dd>
+                    <dt>Total Views:</dt>
+                    <dd>${user.stats?.totalViews || 0}</dd>
+                    <dt>Total Comments:</dt>
+                    <dd>${user.stats?.totalComments || 0}</dd>
+                    <dt>Monthly Publications Used:</dt>
+                    <dd>${user.monthlyPublications || 0} / ${user.subscriptionTier === 'premium' ? 'Unlimited' : '5'}</dd>
+                </dl>
+            </div>
         </div>
     `;
     
-    modal.classList.add('show');
+    modal.style.display = 'flex';
 }
 
 function closeUserModal() {
-    document.getElementById('user-modal').classList.remove('show');
+    document.getElementById('user-modal').style.display = 'none';
 }
 
 async function suspendUser(userId) {
-    const reason = prompt('Enter reason for suspension:');
-    if (!reason) return;
+    if (!confirm('Are you sure you want to suspend this user? They will not be able to access their account.')) {
+        return;
+    }
     
     try {
-        const response = await apiRequest(`/admin/users/${userId}/suspend`, {
-            method: 'PATCH',
-            body: JSON.stringify({ reason })
-        });
+        const response = await apiRequest(`/admin/users/${userId}/suspend`, 'PATCH');
         
         if (response.status === 'success') {
             showSuccess('User suspended successfully');
@@ -295,12 +254,12 @@ async function suspendUser(userId) {
 }
 
 async function reinstateUser(userId) {
-    if (!confirm('Are you sure you want to reinstate this user?')) return;
+    if (!confirm('Are you sure you want to reinstate this user? They will regain access to their account.')) {
+        return;
+    }
     
     try {
-        const response = await apiRequest(`/admin/users/${userId}/reinstate`, {
-            method: 'PATCH'
-        });
+        const response = await apiRequest(`/admin/users/${userId}/reinstate`, 'PATCH');
         
         if (response.status === 'success') {
             showSuccess('User reinstated successfully');
@@ -312,33 +271,50 @@ async function reinstateUser(userId) {
     }
 }
 
-async function confirmDeleteUser(userId) {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
-    
-    try {
-        const response = await apiRequest(`/admin/users/${userId}`, {
-            method: 'DELETE'
-        });
-        
-        if (response.status === 'success') {
-            showSuccess('User deleted successfully');
-            closeUserModal();
-            loadUsers();
+// Utility functions
+async function apiRequest(endpoint, method = 'GET', body = null) {
+    const token = localStorage.getItem('andika_auth_token');
+    const options = {
+        method,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         }
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        showError('Failed to delete user');
+    };
+    
+    if (body) {
+        options.body = JSON.stringify(body);
     }
+    
+    const response = await fetch(`/api${endpoint}`, options);
+    
+    if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+    }
+    
+    return await response.json();
 }
 
 function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString();
-}
-
-function showSuccess(message) {
-    alert(message); // Replace with toast notification
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
 }
 
 function showError(message) {
-    alert(message); // Replace with toast notification
+    // Implement toast notification
+    alert(message);
+}
+
+function showSuccess(message) {
+    // Implement toast notification
+    alert(message);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('user-modal');
+    if (event.target === modal) {
+        closeUserModal();
+    }
 }
