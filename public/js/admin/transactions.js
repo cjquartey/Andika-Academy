@@ -1,93 +1,106 @@
-/**
- * Admin Transactions Monitoring JavaScript
- */
-
+// Transaction Monitoring Page
+const API_BASE = '/api';
 let currentPage = 1;
 let totalPages = 1;
 let currentFilters = {};
 
+// Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    checkAdminAuth();
+    checkAuth();
     loadTransactionStats();
     loadTransactions();
-    setupEventListeners();
+    
+    // Setup event listeners
+    document.getElementById('filter-form')?.addEventListener('submit', handleFilterSubmit);
+    document.getElementById('flag-form')?.addEventListener('submit', handleFlagSubmit);
+    document.getElementById('clear-filters')?.addEventListener('click', clearFilters);
 });
 
-function checkAdminAuth() {
-    const user = JSON.parse(localStorage.getItem('andika_user_data') || '{}');
-    if (!user || user.role !== 'admin') {
-        window.location.href = '/views/login.html';
+// Check authentication
+function checkAuth() {
+    const token = localStorage.getItem('andika_auth_token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
     }
 }
 
-function setupEventListeners() {
-    // Search
-    let searchTimeout;
-    document.getElementById('search-transactions')?.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            currentFilters.search = e.target.value;
-            currentPage = 1;
-            loadTransactions();
-        }, 500);
-    });
-
-    // Filters
-    ['filter-status', 'filter-type', 'filter-method', 'filter-start-date', 'filter-end-date'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', (e) => {
-            const filterKey = id.replace('filter-', '').replace(/-([a-z])/g, g => g[1].toUpperCase());
-            currentFilters[filterKey] = e.target.value;
-            currentPage = 1;
-            loadTransactions();
-        });
-    });
-
-    // Reset
-    document.getElementById('reset-filters')?.addEventListener('click', () => {
-        currentFilters = {};
-        document.querySelectorAll('.filter-select, .filter-input').forEach(el => el.value = '');
-        currentPage = 1;
-        loadTransactions();
-        loadTransactionStats();
-    });
-
-    // Pagination
-    document.getElementById('prev-page')?.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            loadTransactions();
+// API request helper
+async function apiRequest(endpoint, options = {}) {
+    const token = localStorage.getItem('andika_auth_token');
+    
+    const defaultOptions = {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         }
-    });
-
-    document.getElementById('next-page')?.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            loadTransactions();
-        }
-    });
-
-    // Flag form submission
-    document.getElementById('flag-form')?.addEventListener('submit', handleFlagSubmit);
+    };
+    
+    const config = { ...defaultOptions, ...options };
+    
+    // Merge headers properly
+    if (options.headers) {
+        config.headers = { ...defaultOptions.headers, ...options.headers };
+    }
+    
+    const response = await fetch(`/api${endpoint}`, config);
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API request failed: ${response.status}`);
+    }
+    
+    return await response.json();
 }
 
+// Load transaction stats
 async function loadTransactionStats() {
     try {
-        const response = await apiRequest('/admin/transactions/stats');
+        const response = await apiRequest('/admin/analytics/overview');
         
         if (response.status === 'success') {
-            const { overview } = response.data;
-            document.getElementById('stat-total').textContent = overview.totalTransactions.toLocaleString();
-            document.getElementById('stat-revenue').textContent = `GHS ${overview.totalRevenue.toFixed(2)}`;
-            document.getElementById('stat-avg').textContent = `GHS ${overview.avgTransaction.toFixed(2)}`;
+            const stats = response.data;
             
-            const flaggedCount = response.data.byStatus?.find(s => s._id === 'flagged')?.count || 0;
-            document.getElementById('stat-flagged').textContent = flaggedCount;
+            document.getElementById('total-transactions').textContent = 
+                stats.totalTransactions?.toLocaleString() || '0';
+            document.getElementById('total-revenue').textContent = 
+                `GHS ${stats.totalRevenue?.toFixed(2) || '0.00'}`;
+            document.getElementById('avg-transaction').textContent = 
+                `GHS ${stats.averageTransaction?.toFixed(2) || '0.00'}`;
+            document.getElementById('flagged-count').textContent = 
+                stats.flaggedTransactions?.toLocaleString() || '0';
         }
     } catch (error) {
         console.error('Error loading stats:', error);
     }
 }
 
+// Handle filter form submission
+function handleFilterSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    currentFilters = {};
+    
+    for (let [key, value] of formData.entries()) {
+        if (value) {
+            currentFilters[key] = value;
+        }
+    }
+    
+    currentPage = 1;
+    loadTransactions();
+}
+
+// Clear filters
+function clearFilters() {
+    document.getElementById('filter-form').reset();
+    currentFilters = {};
+    currentPage = 1;
+    loadTransactions();
+}
+
+// Load transactions
 async function loadTransactions() {
     try {
         const params = new URLSearchParams({
@@ -110,6 +123,7 @@ async function loadTransactions() {
     }
 }
 
+// Render transactions table
 function renderTransactionsTable(transactions) {
     const tbody = document.getElementById('transactions-table-body');
     
@@ -130,74 +144,134 @@ function renderTransactionsTable(transactions) {
             <td>
                 <div class="table-actions">
                     <button class="action-btn view" onclick="viewTransactionDetails('${tx._id}')">View</button>
-                    ${tx.status !== 'flagged' ? `
-                        <button class="action-btn flag" onclick="openFlagModal('${tx._id}')">Flag</button>
-                    ` : `
-                        <button class="action-btn approve" onclick="unflagTransaction('${tx._id}')">Unflag</button>
-                    `}
+                    ${tx.status !== 'flagged' ?
+                        `<button class="action-btn flag" onclick="openFlagModal('${tx._id}')">Flag</button>` :
+                        `<button class="action-btn unflag" onclick="unflagTransaction('${tx._id}')">Unflag</button>`
+                    }
                 </div>
             </td>
         </tr>
     `).join('');
 }
 
+// Update pagination
 function updatePagination(pagination) {
-    document.getElementById('showing-start').textContent = ((pagination.page - 1) * pagination.limit + 1);
-    document.getElementById('showing-end').textContent = Math.min(pagination.page * pagination.limit, pagination.total);
-    document.getElementById('total-transactions').textContent = pagination.total;
-    document.getElementById('current-page').textContent = pagination.page;
-    document.getElementById('total-pages').textContent = pagination.pages;
+    const container = document.getElementById('pagination');
+    if (!container) return;
     
-    document.getElementById('prev-page').disabled = pagination.page === 1;
-    document.getElementById('next-page').disabled = pagination.page === pagination.pages;
+    const { page, pages, total } = pagination;
+    
+    let paginationHTML = `
+        <button onclick="changePage(${page - 1})" ${page === 1 ? 'disabled' : ''}>Previous</button>
+        <span>Page ${page} of ${pages} (${total} total)</span>
+        <button onclick="changePage(${page + 1})" ${page === pages ? 'disabled' : ''}>Next</button>
+    `;
+    
+    container.innerHTML = paginationHTML;
 }
 
+// Change page
+function changePage(page) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    loadTransactions();
+}
+
+// View transaction details
 async function viewTransactionDetails(txId) {
     try {
         const response = await apiRequest(`/admin/transactions/${txId}`);
         
         if (response.status === 'success') {
-            showTransactionModal(response.data.transaction);
+            displayTransactionModal(response.data.transaction);
         }
     } catch (error) {
-        console.error('Error loading transaction:', error);
+        console.error('Error loading transaction details:', error);
+        alert('Failed to load transaction details');
     }
 }
 
-function showTransactionModal(tx) {
+// Display transaction modal
+function displayTransactionModal(tx) {
     const modal = document.getElementById('transaction-modal');
-    const content = document.getElementById('transaction-details-content');
+    const modalBody = document.getElementById('transaction-details');
     
-    content.innerHTML = `
+    modalBody.innerHTML = `
         <div class="detail-grid">
-            <div class="detail-item"><div class="detail-label">Reference</div><div class="detail-value">${tx.paystackReference || 'N/A'}</div></div>
-            <div class="detail-item"><div class="detail-label">User</div><div class="detail-value">${tx.user?.username || 'Unknown'}</div></div>
-            <div class="detail-item"><div class="detail-label">Type</div><div class="detail-value">${tx.type}</div></div>
-            <div class="detail-item"><div class="detail-label">Amount</div><div class="detail-value">GHS ${tx.amount.toFixed(2)}</div></div>
-            <div class="detail-item"><div class="detail-label">Payment Method</div><div class="detail-value">${tx.paymentMethod}</div></div>
-            <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge status-${tx.status}">${tx.status}</span></div></div>
-            <div class="detail-item"><div class="detail-label">Date</div><div class="detail-value">${new Date(tx.createdAt).toLocaleString()}</div></div>
-            ${tx.flagReason ? `<div class="detail-item"><div class="detail-label">Flag Reason</div><div class="detail-value">${tx.flagReason}</div></div>` : ''}
+            <div class="detail-item">
+                <div class="detail-label">Transaction ID</div>
+                <div class="detail-value"><code>${tx._id}</code></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Paystack Reference</div>
+                <div class="detail-value"><code>${tx.paystackReference || 'N/A'}</code></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">User</div>
+                <div class="detail-value">${tx.user?.username || 'Unknown'} (${tx.user?.email || 'N/A'})</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Type</div>
+                <div class="detail-value"><span class="badge">${tx.type}</span></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Amount</div>
+                <div class="detail-value"><strong>GHS ${tx.amount.toFixed(2)}</strong></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Payment Method</div>
+                <div class="detail-value">${tx.paymentMethod}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Status</div>
+                <div class="detail-value"><span class="badge status-${tx.status}">${tx.status}</span></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Created</div>
+                <div class="detail-value">${new Date(tx.createdAt).toLocaleString()}</div>
+            </div>
+            ${tx.relatedSubscription ? `
+            <div class="detail-item">
+                <div class="detail-label">Subscription</div>
+                <div class="detail-value">${tx.relatedSubscription.tier} - ${tx.relatedSubscription.duration}</div>
+            </div>
+            ` : ''}
+            ${tx.relatedWriting ? `
+            <div class="detail-item">
+                <div class="detail-label">Related Writing</div>
+                <div class="detail-value">${tx.relatedWriting.title}</div>
+            </div>
+            ` : ''}
+            ${tx.status === 'flagged' ? `
+            <div class="detail-item">
+                <div class="detail-label">Flag Reason</div>
+                <div class="detail-value">${tx.flagReason}</div>
+            </div>
+            ` : ''}
         </div>
     `;
     
     modal.classList.add('show');
 }
 
+// Close transaction modal
 function closeTransactionModal() {
     document.getElementById('transaction-modal').classList.remove('show');
 }
 
+// Open flag modal
 function openFlagModal(txId) {
     document.getElementById('flag-transaction-id').value = txId;
     document.getElementById('flag-modal').classList.add('show');
 }
 
+// Close flag modal
 function closeFlagModal() {
     document.getElementById('flag-modal').classList.remove('show');
     document.getElementById('flag-form').reset();
 }
 
+// Handle flag submit
 async function handleFlagSubmit(e) {
     e.preventDefault();
     
@@ -222,6 +296,7 @@ async function handleFlagSubmit(e) {
     }
 }
 
+// Unflag transaction
 async function unflagTransaction(txId) {
     if (!confirm('Unflag this transaction?')) return;
     
@@ -241,6 +316,7 @@ async function unflagTransaction(txId) {
     }
 }
 
+// Export transactions
 function exportTransactions() {
     window.location.href = `${API_BASE}/admin/analytics/export?type=transactions`;
 }

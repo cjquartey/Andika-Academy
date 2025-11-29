@@ -1,91 +1,107 @@
-/**
- * Admin Disputes Management JavaScript
- */
-
+// Dispute Management Page
+const API_BASE = '/api';
 let currentPage = 1;
 let totalPages = 1;
 let currentFilters = {};
 
+// Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    checkAdminAuth();
+    checkAuth();
     loadDisputeStats();
     loadDisputes();
-    setupEventListeners();
+    
+    // Setup event listeners
+    document.getElementById('filter-form')?.addEventListener('submit', handleFilterSubmit);
+    document.getElementById('resolve-form')?.addEventListener('submit', handleResolveSubmit);
+    document.getElementById('reject-form')?.addEventListener('submit', handleRejectSubmit);
+    document.getElementById('clear-filters')?.addEventListener('click', clearFilters);
 });
 
-function checkAdminAuth() {
-    const user = JSON.parse(localStorage.getItem('andika_user_data') || '{}');
-    if (!user || user.role !== 'admin') {
-        window.location.href = '/views/login.html';
+// Check authentication
+function checkAuth() {
+    const token = localStorage.getItem('andika_auth_token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
     }
 }
 
-function setupEventListeners() {
-    // Search and filters
-    let searchTimeout;
-    document.getElementById('search-disputes')?.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            currentFilters.search = e.target.value;
-            currentPage = 1;
-            loadDisputes();
-        }, 500);
-    });
-
-    ['filter-status', 'filter-type', 'filter-priority', 'filter-assigned'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', (e) => {
-            const filterKey = id.replace('filter-', '');
-            currentFilters[filterKey] = e.target.value;
-            currentPage = 1;
-            loadDisputes();
-        });
-    });
-
-    document.getElementById('reset-filters')?.addEventListener('click', () => {
-        currentFilters = {};
-        document.querySelectorAll('.filter-select').forEach(el => el.value = '');
-        currentPage = 1;
-        loadDisputes();
-        loadDisputeStats();
-    });
-
-    // Pagination
-    document.getElementById('prev-page')?.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            loadDisputes();
+// API request helper
+async function apiRequest(endpoint, options = {}) {
+    const token = localStorage.getItem('andika_auth_token');
+    
+    const defaultOptions = {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         }
-    });
-
-    document.getElementById('next-page')?.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            loadDisputes();
-        }
-    });
-
-    // Forms
-    document.getElementById('resolve-form')?.addEventListener('submit', handleResolveSubmit);
-    document.getElementById('reject-form')?.addEventListener('submit', handleRejectSubmit);
+    };
+    
+    const config = { ...defaultOptions, ...options };
+    
+    // Merge headers properly
+    if (options.headers) {
+        config.headers = { ...defaultOptions.headers, ...options.headers };
+    }
+    
+    const response = await fetch(`${API_BASE}${endpoint}`, config);
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API request failed: ${response.status}`);
+    }
+    
+    return await response.json();
 }
 
+// Load dispute stats
 async function loadDisputeStats() {
     try {
-        const response = await apiRequest('/admin/disputes/stats');
+        const response = await apiRequest('/admin/analytics/overview');
         
         if (response.status === 'success') {
-            const { byStatus, byPriority } = response.data;
+            const stats = response.data;
             
-            document.getElementById('stat-open').textContent = byStatus?.find(s => s._id === 'open')?.count || 0;
-            document.getElementById('stat-progress').textContent = byStatus?.find(s => s._id === 'in_progress')?.count || 0;
-            document.getElementById('stat-resolved').textContent = byStatus?.find(s => s._id === 'resolved')?.count || 0;
-            document.getElementById('stat-urgent').textContent = byPriority?.find(p => p._id === 'urgent')?.count || 0;
+            document.getElementById('total-disputes').textContent = 
+                stats.totalDisputes?.toLocaleString() || '0';
+            document.getElementById('open-disputes').textContent = 
+                stats.openDisputes?.toLocaleString() || '0';
+            document.getElementById('resolved-disputes').textContent = 
+                stats.resolvedDisputes?.toLocaleString() || '0';
+            document.getElementById('disputed-amount').textContent = 
+                `GHS ${stats.disputedAmount?.toFixed(2) || '0.00'}`;
         }
     } catch (error) {
         console.error('Error loading stats:', error);
     }
 }
 
+// Handle filter form submission
+function handleFilterSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    currentFilters = {};
+    
+    for (let [key, value] of formData.entries()) {
+        if (value) {
+            currentFilters[key] = value;
+        }
+    }
+    
+    currentPage = 1;
+    loadDisputes();
+}
+
+// Clear filters
+function clearFilters() {
+    document.getElementById('filter-form').reset();
+    currentFilters = {};
+    currentPage = 1;
+    loadDisputes();
+}
+
+// Load disputes
 async function loadDisputes() {
     try {
         const params = new URLSearchParams({
@@ -108,78 +124,116 @@ async function loadDisputes() {
     }
 }
 
+// Render disputes table
 function renderDisputesTable(disputes) {
     const tbody = document.getElementById('disputes-table-body');
     
     if (disputes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 3rem;">No disputes found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 3rem;">No disputes found</td></tr>';
         return;
     }
 
-    tbody.innerHTML = disputes.map(d => `
+    tbody.innerHTML = disputes.map(dispute => `
         <tr>
-            <td><code>${d._id.slice(-6)}</code></td>
-            <td>${d.user?.username || 'Unknown'}</td>
-            <td>${d.subject}</td>
-            <td>${d.type.replace('_', ' ')}</td>
-            <td><span class="badge priority-${d.priority}">${d.priority}</span></td>
-            <td><span class="badge status-${d.status}">${d.status.replace('_', ' ')}</span></td>
-            <td>${d.assignedTo ? 'Assigned' : 'Unassigned'}</td>
-            <td>${new Date(d.createdAt).toLocaleDateString()}</td>
+            <td><code>${dispute._id.substring(0, 8)}</code></td>
+            <td>${dispute.transaction?.user?.username || 'Unknown'}</td>
+            <td>${dispute.reason}</td>
+            <td><strong>GHS ${dispute.transaction?.amount?.toFixed(2) || '0.00'}</strong></td>
+            <td><span class="badge status-${dispute.status}">${dispute.status}</span></td>
+            <td>${dispute.assignedTo?.user?.username || 'Unassigned'}</td>
             <td>
                 <div class="table-actions">
-                    <button class="action-btn view" onclick="viewDisputeDetails('${d._id}')">View</button>
-                    ${d.status === 'open' || d.status === 'in_progress' ? `
-                        <button class="action-btn approve" onclick="openResolveModal('${d._id}')">Resolve</button>
-                    ` : ''}
+                    <button class="action-btn view" onclick="viewDisputeDetails('${dispute._id}')">View</button>
+                    ${!dispute.assignedTo ? 
+                        `<button class="action-btn assign" onclick="assignDispute('${dispute._id}')">Assign</button>` : 
+                        ''}
+                    ${dispute.status === 'open' || dispute.status === 'in_progress' ?
+                        `<button class="action-btn resolve" onclick="openResolveModal('${dispute._id}')">Resolve</button>` :
+                        ''}
                 </div>
             </td>
         </tr>
     `).join('');
 }
 
+// Update pagination
 function updatePagination(pagination) {
-    document.getElementById('showing-start').textContent = ((pagination.page - 1) * pagination.limit + 1);
-    document.getElementById('showing-end').textContent = Math.min(pagination.page * pagination.limit, pagination.total);
-    document.getElementById('total-disputes').textContent = pagination.total;
-    document.getElementById('current-page').textContent = pagination.page;
-    document.getElementById('total-pages').textContent = pagination.pages;
+    const container = document.getElementById('pagination');
+    if (!container) return;
     
-    document.getElementById('prev-page').disabled = pagination.page === 1;
-    document.getElementById('next-page').disabled = pagination.page === pagination.pages;
+    const { page, pages, total } = pagination;
+    
+    let paginationHTML = `
+        <button onclick="changePage(${page - 1})" ${page === 1 ? 'disabled' : ''}>Previous</button>
+        <span>Page ${page} of ${pages} (${total} total)</span>
+        <button onclick="changePage(${page + 1})" ${page === pages ? 'disabled' : ''}>Next</button>
+    `;
+    
+    container.innerHTML = paginationHTML;
 }
 
+// Change page
+function changePage(page) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    loadDisputes();
+}
+
+// View dispute details
 async function viewDisputeDetails(disputeId) {
     try {
         const response = await apiRequest(`/admin/disputes/${disputeId}`);
         
         if (response.status === 'success') {
-            showDisputeModal(response.data.dispute);
+            displayDisputeModal(response.data.dispute);
         }
     } catch (error) {
-        console.error('Error loading dispute:', error);
+        console.error('Error loading dispute details:', error);
+        alert('Failed to load dispute details');
     }
 }
 
-function showDisputeModal(dispute) {
+// Display dispute modal
+function displayDisputeModal(dispute) {
     const modal = document.getElementById('dispute-modal');
-    const content = document.getElementById('dispute-details-content');
+    const modalBody = document.getElementById('dispute-details');
     
-    content.innerHTML = `
-        <div class="detail-section">
-            <h3>Dispute Information</h3>
-            <div class="detail-grid">
-                <div class="detail-item"><div class="detail-label">Subject</div><div class="detail-value">${dispute.subject}</div></div>
-                <div class="detail-item"><div class="detail-label">Type</div><div class="detail-value">${dispute.type.replace('_', ' ')}</div></div>
-                <div class="detail-item"><div class="detail-label">Priority</div><div class="detail-value"><span class="badge priority-${dispute.priority}">${dispute.priority}</span></div></div>
-                <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge status-${dispute.status}">${dispute.status.replace('_', ' ')}</span></div></div>
+    modalBody.innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Dispute ID</div>
+                <div class="detail-value"><code>${dispute._id}</code></div>
             </div>
-            <div style="margin-top: 1rem;">
-                <div class="detail-label">Description</div>
-                <div class="detail-value">${dispute.description}</div>
+            <div class="detail-item">
+                <div class="detail-label">User</div>
+                <div class="detail-value">${dispute.transaction?.user?.username || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Transaction Amount</div>
+                <div class="detail-value"><strong>GHS ${dispute.transaction?.amount?.toFixed(2) || '0.00'}</strong></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Status</div>
+                <div class="detail-value"><span class="badge status-${dispute.status}">${dispute.status}</span></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Assigned To</div>
+                <div class="detail-value">${dispute.assignedTo?.user?.username || 'Unassigned'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Created</div>
+                <div class="detail-value">${new Date(dispute.createdAt).toLocaleString()}</div>
             </div>
         </div>
-        ${dispute.resolution ? `
+        <div class="detail-section">
+            <h3>Reason</h3>
+            <p>${dispute.reason}</p>
+        </div>
+        <div class="detail-section">
+            <h3>Description</h3>
+            <p>${dispute.description || 'No description provided'}</p>
+        </div>
+        ${dispute.status === 'resolved' || dispute.status === 'rejected' ? `
         <div class="detail-section">
             <h3>Resolution</h3>
             <div class="detail-value">${dispute.resolution}</div>
@@ -201,10 +255,12 @@ function showDisputeModal(dispute) {
     modal.classList.add('show');
 }
 
+// Close dispute modal
 function closeDisputeModal() {
     document.getElementById('dispute-modal').classList.remove('show');
 }
 
+// Assign dispute
 async function assignDispute(disputeId) {
     try {
         const response = await apiRequest(`/admin/disputes/${disputeId}/assign`, {
@@ -214,6 +270,7 @@ async function assignDispute(disputeId) {
         if (response.status === 'success') {
             alert('Dispute assigned successfully');
             loadDisputes();
+            loadDisputeStats();
         }
     } catch (error) {
         console.error('Error assigning dispute:', error);
@@ -221,26 +278,31 @@ async function assignDispute(disputeId) {
     }
 }
 
+// Open resolve modal
 function openResolveModal(disputeId) {
     document.getElementById('resolve-dispute-id').value = disputeId;
     document.getElementById('resolve-modal').classList.add('show');
 }
 
+// Close resolve modal
 function closeResolveModal() {
     document.getElementById('resolve-modal').classList.remove('show');
     document.getElementById('resolve-form').reset();
 }
 
+// Open reject modal
 function openRejectModal(disputeId) {
     document.getElementById('reject-dispute-id').value = disputeId;
     document.getElementById('reject-modal').classList.add('show');
 }
 
+// Close reject modal
 function closeRejectModal() {
     document.getElementById('reject-modal').classList.remove('show');
     document.getElementById('reject-form').reset();
 }
 
+// Handle resolve submit
 async function handleResolveSubmit(e) {
     e.preventDefault();
     
@@ -269,6 +331,7 @@ async function handleResolveSubmit(e) {
     }
 }
 
+// Handle reject submit
 async function handleRejectSubmit(e) {
     e.preventDefault();
     

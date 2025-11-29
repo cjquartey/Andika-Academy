@@ -1,232 +1,108 @@
-/**
- * Admin Dashboard JavaScript
- * Handles dashboard data loading and visualization
- */
+// Admin Dashboard - Main Page
+const API_BASE = '/api';
 
-let revenueChart = null;
-let userGrowthChart = null;
-
-// Initialize dashboard on page load
+// Initialize dashboard
 document.addEventListener('DOMContentLoaded', () => {
-    checkAdminAuth();
-    loadDashboardData();
-    setupEventListeners();
+    checkAuth();
+    loadDashboardStats();
+    loadRevenueChart();
+    loadRecentActivity();
 });
 
-// Check if user is admin
-function checkAdminAuth() {
-    const user = JSON.parse(localStorage.getItem('andika_user_data') || '{}');
-    
-    if (!user || user.role !== 'admin') {
-        window.location.href = '/views/login.html';
+// Check authentication
+function checkAuth() {
+    const token = localStorage.getItem('andika_auth_token');
+    if (!token) {
+        window.location.href = '/login';
         return;
     }
 }
 
-// Setup event listeners
-function setupEventListeners() {
-    // Period filter change
-    document.getElementById('period-filter')?.addEventListener('change', (e) => {
-        loadDashboardData(e.target.value);
-    });
-
-    // Revenue chart grouping change
-    document.getElementById('revenue-groupby')?.addEventListener('change', (e) => {
-        loadRevenueChart(e.target.value);
-    });
-}
-
-// Load all dashboard data
-async function loadDashboardData(period = 30) {
-    try {
-        await Promise.all([
-            loadOverviewStats(period),
-            loadRevenueChart('month'),
-            loadUserGrowthChart(period),
-            loadRecentActivity()
-        ]);
-    } catch (error) {
-        console.error('Error loading dashboard:', error);
-        showError('Failed to load dashboard data');
+// API request helper
+async function apiRequest(endpoint, options = {}) {
+    const token = localStorage.getItem('andika_auth_token');
+    
+    const defaultOptions = {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    };
+    
+    const config = { ...defaultOptions, ...options };
+    
+    // Merge headers properly
+    if (options.headers) {
+        config.headers = { ...defaultOptions.headers, ...options.headers };
     }
+    
+    const response = await fetch(`${API_BASE}${endpoint}`, config);
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API request failed: ${response.status}`);
+    }
+    
+    return await response.json();
 }
 
-// Load overview statistics
-async function loadOverviewStats(period) {
+// Load dashboard statistics
+async function loadDashboardStats() {
     try {
-        const response = await apiRequest(`/admin/analytics/dashboard?period=${period}`);
+        const response = await apiRequest('/admin/analytics/overview');
         
         if (response.status === 'success') {
-            const { overview, growth } = response.data;
+            const stats = response.data;
             
             // Update stat cards
-            document.getElementById('total-users').textContent = overview.totalUsers.toLocaleString();
-            document.getElementById('active-subscribers').textContent = overview.activeSubscribers.toLocaleString();
-            document.getElementById('total-revenue').textContent = `GHS ${overview.totalRevenue.toFixed(2)}`;
-            document.getElementById('pending-disputes').textContent = overview.pendingDisputes;
-            
-            // Calculate and show changes
-            const usersChange = calculateGrowth(growth, 'users');
-            const subscribersChange = calculateGrowth(growth, 'subscribers');
-            const revenueChange = calculateGrowth(growth, 'revenue');
-            
-            updateStatChange('users-change', usersChange);
-            updateStatChange('subscribers-change', subscribersChange);
-            updateStatChange('revenue-change', revenueChange);
-            
-            // Update urgent disputes
-            const urgentText = overview.flaggedTransactions > 0 
-                ? `${overview.flaggedTransactions} flagged transactions need review`
-                : 'No urgent items';
-            
-            document.getElementById('urgent-disputes').textContent = urgentText;
+            document.getElementById('total-users').textContent = 
+                stats.totalUsers?.toLocaleString() || '0';
+            document.getElementById('active-subscriptions').textContent = 
+                stats.activeSubscriptions?.toLocaleString() || '0';
+            document.getElementById('total-revenue').textContent = 
+                `GHS ${stats.totalRevenue?.toFixed(2) || '0.00'}`;
+            document.getElementById('pending-disputes').textContent = 
+                stats.pendingDisputes?.toLocaleString() || '0';
         }
     } catch (error) {
-        console.error('Error loading stats:', error);
+        console.error('Error loading dashboard stats:', error);
     }
-}
-
-// Calculate growth percentage
-function calculateGrowth(growth, metric) {
-    if (!growth || !growth[metric]) return 0;
-    const { current, previous } = growth[metric];
-    if (previous === 0) return current > 0 ? 100 : 0;
-    return ((current - previous) / previous) * 100;
-}
-
-// Update stat change indicator
-function updateStatChange(elementId, changePercent) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-    
-    const isPositive = changePercent >= 0;
-    const arrow = isPositive ? '↑' : '↓';
-    const className = isPositive ? 'stat-increase' : 'stat-decrease';
-    
-    element.textContent = `${arrow} ${Math.abs(changePercent).toFixed(1)}%`;
-    element.className = `stat-change ${className}`;
 }
 
 // Load revenue chart
-async function loadRevenueChart(groupBy = 'month') {
+async function loadRevenueChart() {
     try {
-        const response = await apiRequest(`/admin/analytics/revenue?groupBy=${groupBy}`);
+        const response = await apiRequest('/admin/analytics/revenue?period=7d');
         
         if (response.status === 'success') {
-            const { labels, values } = response.data;
-            
-            const ctx = document.getElementById('revenue-chart');
-            if (!ctx) return;
-            
-            // Destroy existing chart
-            if (revenueChart) {
-                revenueChart.destroy();
-            }
-            
-            // Create new chart
-            revenueChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Revenue (GHS)',
-                        data: values,
-                        borderColor: 'rgb(234, 88, 12)',
-                        backgroundColor: 'rgba(234, 88, 12, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'GHS ' + value.toFixed(2);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            const data = response.data.data;
+            renderRevenueChart(data);
         }
     } catch (error) {
         console.error('Error loading revenue chart:', error);
     }
 }
 
-// Load user growth chart
-async function loadUserGrowthChart(period) {
-    try {
-        const response = await apiRequest(`/admin/analytics/users?period=${period}`);
-        
-        if (response.status === 'success') {
-            const { labels, values } = response.data;
-            
-            const ctx = document.getElementById('user-growth-chart');
-            if (!ctx) return;
-            
-            // Destroy existing chart
-            if (userGrowthChart) {
-                userGrowthChart.destroy();
-            }
-            
-            // Create new chart
-            userGrowthChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'New Users',
-                        data: values,
-                        backgroundColor: 'rgba(30, 58, 138, 0.8)',
-                        borderColor: 'rgb(30, 58, 138)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    } catch (error) {
-        console.error('Error loading user growth chart:', error);
-    }
+// Render revenue chart (placeholder - implement with Chart.js)
+function renderRevenueChart(data) {
+    const chartContainer = document.getElementById('revenue-chart');
+    if (!chartContainer) return;
+    
+    // TODO: Implement actual chart with Chart.js
+    chartContainer.innerHTML = '<p>Revenue chart will be displayed here</p>';
 }
 
 // Load recent activity
 async function loadRecentActivity() {
     try {
         // Load recent transactions
-        const transactionsResponse = await apiRequest('/admin/transactions?limit=5&sort=createdAt:desc');
-        if (transactionsResponse.status === 'success') {
-            renderRecentTransactions(transactionsResponse.data.transactions);
+        const txResponse = await apiRequest('/admin/transactions?limit=5&sort=createdAt:desc');
+        if (txResponse.status === 'success') {
+            renderRecentTransactions(txResponse.data.transactions);
         }
         
         // Load flagged transactions
-        const flaggedResponse = await apiRequest('/admin/transactions?status=flagged&limit=5');
+        const flaggedResponse = await apiRequest('/admin/transactions?flagged=true&limit=5');
         if (flaggedResponse.status === 'success') {
             renderFlaggedTransactions(flaggedResponse.data.transactions);
         }
@@ -283,7 +159,7 @@ function renderFlaggedTransactions(transactions) {
             </div>
             <div class="activity-meta">
                 <span class="badge badge-danger">Flagged</span>
-                <a href="/views/admin/transactions.html?id=${t._id}" class="view-link">Review →</a>
+                <a href="/admin-transactions?id=${t._id}" class="view-link">Review →</a>
             </div>
         </div>
     `).join('');
@@ -307,28 +183,11 @@ function renderRecentDisputes(disputes) {
             </div>
             <div class="activity-meta">
                 <span class="badge badge-${d.status}">${d.status}</span>
-                <a href="/views/admin/disputes.html?id=${d._id}" class="view-link">View →</a>
+                <a href="/admin-disputes?id=${d._id}" class="view-link">View →</a>
             </div>
         </div>
     `).join('');
-}
-
-// Utility: API request helper
-async function apiRequest(endpoint) {
-    const token = localStorage.getItem('andika_auth_token');
-    const response = await fetch(`/api${endpoint}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-    
-    if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-    }
-    
-    return await response.json();
-}
+};
 
 // Utility: Format date
 function formatDate(dateString) {
@@ -347,10 +206,10 @@ function formatDate(dateString) {
     if (diffDays < 7) return `${diffDays}d ago`;
     
     return date.toLocaleDateString();
-}
+};
 
 // Utility: Show error
 function showError(message) {
-    // You can implement a toast notification here
     console.error(message);
-}
+    // TODO: Implement toast notification
+};
