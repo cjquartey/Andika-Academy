@@ -123,15 +123,20 @@ async function handleLogin(e) {
         if (userResponse.success) {
             Auth.setUser(userResponse.user);
         }
-
+                
         // Show success message
         showAlert('Login successful! Redirecting...', 'success');
 
-        // Redirect to dashboard after a short delay
-        setTimeout(() => {
-            window.location.href = '/views/dashboard.html';
-        }, 1000);
-
+        // Redirect to appropriate dashboard after a short delay
+        if (userResponse.user.role === 'admin') {
+            setTimeout(() => {
+                window.location.href = '/views/admin/dashboard.html';
+            }, 1000);
+        } else {
+            setTimeout(() => {
+                window.location.href = '/views/dashboard.html';
+            }, 1000);
+        }
     } catch (error) {
         setLoading(false);
         
