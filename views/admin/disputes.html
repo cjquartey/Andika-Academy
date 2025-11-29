@@ -249,6 +249,8 @@
             .then(res => res.text())
             .then(html => {
                 document.getElementById('sidebar-container').innerHTML = html;
+
+                initializeAdminNavbar();
             });
 
         fetch('/views/components/footer.html')
@@ -256,6 +258,42 @@
             .then(html => {
                 document.getElementById('footer-container').innerHTML = html;
             });
+
+        // Admin navbar initialization
+        function initializeAdminNavbar() {
+            // Highlight active page
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                const page = link.getAttribute('data-page');
+                if (currentPath.includes(page)) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Sidebar toggle for mobile
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('admin-sidebar');
+
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+
+            // Load admin name
+            const adminUser = JSON.parse(localStorage.getItem('andika_user_data') || '{}');
+            const adminNameEl = document.getElementById('admin-name');
+            if (adminNameEl && adminUser.username) {
+                adminNameEl.textContent = adminUser.username;
+            }
+        }
+
+        // Logout handler
+        function handleAdminLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('andika_auth_token');
+                localStorage.removeItem('andika_user_data');
+                window.location.href = '/views/login.html';
+            }
+        }
     </script>
 </body>
 </html>
