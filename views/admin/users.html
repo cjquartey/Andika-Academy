@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="/public/css/admin.css">
 </head>
 <body>
-    <!-- Admin Navbar -->
-    <div id="navbar-container"></div>
+    <!-- Admin Sidebar -->
+    <div id="sidebar-container"></div>
 
     <main class="admin-page">
         <div class="container">
@@ -49,53 +49,48 @@
                         <option value="suspended">Suspended</option>
                     </select>
 
-                    <button class="btn btn-outline" id="reset-filters">
+                    <button class="btn btn-sm btn-outline" id="reset-filters">
                         Reset Filters
                     </button>
                 </div>
             </div>
 
             <!-- Users Table -->
-            <div class="table-card">
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Tier</th>
-                                <th>Status</th>
-                                <th>Joined</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-table-body">
-                            <tr>
-                                <td colspan="7" class="loading-row">
-                                    <div class="loading">Loading users...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Tier</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users will be loaded here -->
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 3rem;">
+                                Loading users...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <!-- Pagination -->
-                <div class="table-pagination">
-                    <div class="pagination-info">
-                        Showing <span id="showing-start">0</span> to <span id="showing-end">0</span> of <span id="total-users">0</span> users
-                    </div>
-                    <div class="pagination-controls">
-                        <button class="btn btn-sm btn-outline" id="prev-page" disabled>
-                            Previous
-                        </button>
-                        <span class="page-indicator">
-                            Page <span id="current-page">1</span> of <span id="total-pages">1</span>
-                        </span>
-                        <button class="btn btn-sm btn-outline" id="next-page" disabled>
-                            Next
-                        </button>
-                    </div>
+                <div class="pagination-controls">
+                    <button class="btn btn-sm btn-outline" id="prev-page" disabled>
+                        Previous
+                    </button>
+                    <span class="page-indicator">
+                        Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                    </span>
+                    <button class="btn btn-sm btn-outline" id="next-page" disabled>
+                        Next
+                    </button>
                 </div>
             </div>
         </div>
@@ -118,9 +113,6 @@
         </div>
     </div>
 
-    <!-- Include Footer -->
-    <div id="footer-container"></div>
-
     <!-- Scripts -->
     <script src="/public/js/config.js"></script>
     <script src="/public/js/auth.js"></script>
@@ -132,13 +124,7 @@
         fetch('/views/components/admin-navbar.html')
             .then(res => res.text())
             .then(html => {
-                document.getElementById('navbar-container').innerHTML = html;
-            });
-
-        fetch('/views/components/footer.html')
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('footer-container').innerHTML = html;
+                document.getElementById('sidebar-container').innerHTML = html;
             });
     </script>
 </body>

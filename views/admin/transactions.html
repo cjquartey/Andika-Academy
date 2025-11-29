@@ -9,7 +9,7 @@
 </head>
 <body>
     <!-- Admin Navbar -->
-    <div id="navbar-container"></div>
+    <div id="sidebar-container"></div>
 
     <main class="admin-page">
         <div class="container">
@@ -203,7 +203,7 @@
         fetch('/views/components/admin-navbar.html')
             .then(res => res.text())
             .then(html => {
-                document.getElementById('navbar-container').innerHTML = html;
+                document.getElementById('sidebar-container').innerHTML = html;
             });
 
         fetch('/views/components/footer.html')
