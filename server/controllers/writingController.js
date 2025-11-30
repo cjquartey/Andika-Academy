@@ -89,9 +89,11 @@ const getAllWritings = async (req, res) => {
 };
 
 const getWritingById = async (req, res) => {
-    try{
-        const writing = await Writing.findById(req.params.id)
+    try {
+        const id = req.params.id;
+        const writing = await Writing.findById(id)
             .populate('author', 'username firstName lastName profilePictureURL bio');
+        
         if (!writing) {
             return res.status(404).json({
                 success: false,
@@ -99,24 +101,45 @@ const getWritingById = async (req, res) => {
             });
         }
 
-        const userId = req.user?.id;
+        // Get user authentication from header (works without middleware)
         let userSubscriptionTier = null;
         let userSubscriptionStatus = null;
-
-        if (userId) {
-            const currentUser = await User.findById(userId)
-                .select('subscriptionTier subscriptionStatus accountStatus');
-            
-            if (currentUser && currentUser.accountStatus === 'active') {
-                userSubscriptionTier = currentUser.subscriptionTier;
-                userSubscriptionStatus = currentUser.subscriptionStatus;
+        let userId = null;
+        
+        const authHeader = req.headers['authorization'];
+        if (authHeader?.startsWith("Bearer ")) {
+            try {
+                const jwt = require('jsonwebtoken');
+                const token = authHeader.split(' ')[1];
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                
+                if (decoded.userId) {
+                    // Fetch fresh user data from database
+                    const currentUser = await User.findById(decoded.userId)
+                        .select('subscriptionTier subscriptionStatus accountStatus');
+                    
+                    if (currentUser && currentUser.accountStatus === 'active') {
+                        userId = decoded.userId;
+                        userSubscriptionTier = currentUser.subscriptionTier;
+                        userSubscriptionStatus = currentUser.subscriptionStatus;
+                    }
+                }
+            } catch (err) {
+                // Invalid or expired token - continue as unauthenticated user
+                console.log('Auth error (non-fatal):', err.message);
             }
         }
-
+        
         let canAccessFull = false;
-
+        
         // Check access permissions
-        if (writing.accessLevel === 'free') {
+        if (writing.status === 'draft') {
+            // Only author can access drafts
+            if (userId && userId === writing.author._id.toString()) {
+                canAccessFull = true;
+            }
+        } else if (writing.accessLevel === 'free') {
+            // Everyone can access free content
             canAccessFull = true;
         } else if (writing.accessLevel === 'premium') {
             // Check if user has active premium subscription
@@ -126,12 +149,13 @@ const getWritingById = async (req, res) => {
             }
             
             // Author can always access their own content
-            if (req.user?.id && writing.author._id.toString() === req.user.id) {
+            if (userId && userId === writing.author._id.toString()) {
                 canAccessFull = true;
             }
         }
 
-        if (canAccessFull){
+        // Increment view count only if user has full access
+        if (canAccessFull) {
             writing.viewCount += 1;
             await writing.save();
 
@@ -139,7 +163,8 @@ const getWritingById = async (req, res) => {
                 success: true,
                 data: writing
             });
-        } else{
+        } else {
+            // Return limited preview for premium content
             return res.status(200).json({
                 success: true,
                 data: {
@@ -150,13 +175,15 @@ const getWritingById = async (req, res) => {
                 }
             });
         }
-    } catch(error){
+    } catch (error) {
+        console.error('Error in getWritingById:', error);
         res.status(500).json({
-            success:false,
+            success: false,
             message: error.message
         });
     }
 };
+
 const updateWriting = async (req, res) => {
     try{
         const writing = req.writing;
