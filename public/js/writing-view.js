@@ -333,7 +333,7 @@ function initializeTTS() {
     ttsInstance = new WritingTTS();
     ttsInitialized = true;
 
-    // Get UI elements
+    // Get UI elements - with null checks
     const playBtn = document.getElementById('tts-play-btn');
     const stopBtn = document.getElementById('tts-stop-btn');
     const statusEl = document.getElementById('tts-status');
@@ -346,94 +346,148 @@ function initializeTTS() {
     const pitchSlider = document.getElementById('tts-pitch-slider');
     const pitchValue = document.getElementById('tts-pitch-value');
 
-    // Populate voice select
+    // Safety check - if elements don't exist, don't proceed
+    if (!playBtn || !stopBtn || !voiceSelect) {
+        console.warn('TTS UI elements not found, skipping initialization');
+        return;
+    }
+
+    // Populate voice select with error handling
     function populateVoices() {
-        const voices = ttsInstance.getVoices();
-        if (voices.length === 0) {
-            setTimeout(populateVoices, 100);
-            return;
-        }
+        try {
+            const voices = ttsInstance.getVoices();
+            
+            if (!voices || voices.length === 0) {
+                // Retry after a short delay
+                setTimeout(populateVoices, 100);
+                return;
+            }
 
-        const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-        const otherVoices = voices.filter(v => !v.lang.startsWith('en'));
+            // Filter voices safely
+            const englishVoices = voices.filter(v => v && v.lang && v.lang.startsWith('en'));
+            const otherVoices = voices.filter(v => v && v.lang && !v.lang.startsWith('en'));
 
-        voiceSelect.innerHTML = '';
+            voiceSelect.innerHTML = '';
 
-        if (englishVoices.length > 0) {
-            const group = document.createElement('optgroup');
-            group.label = 'English';
-            englishVoices.forEach((voice, index) => {
+            if (englishVoices.length > 0) {
+                const group = document.createElement('optgroup');
+                group.label = 'English';
+                englishVoices.forEach((voice, index) => {
+                    if (voice && voice.name) {
+                        const option = document.createElement('option');
+                        option.textContent = `${voice.name} (${voice.lang || 'en'})`;
+                        option.value = index;
+                        group.appendChild(option);
+                    }
+                });
+                voiceSelect.appendChild(group);
+            }
+
+            if (otherVoices.length > 0) {
+                const group = document.createElement('optgroup');
+                group.label = 'Other Languages';
+                otherVoices.forEach((voice, index) => {
+                    if (voice && voice.name) {
+                        const option = document.createElement('option');
+                        option.textContent = `${voice.name} (${voice.lang || 'unknown'})`;
+                        option.value = englishVoices.length + index;
+                        group.appendChild(option);
+                    }
+                });
+                voiceSelect.appendChild(group);
+            }
+
+            // If no voices found, show a message
+            if (voiceSelect.options.length === 0) {
                 const option = document.createElement('option');
-                option.textContent = `${voice.name} (${voice.lang})`;
-                option.value = index;
-                group.appendChild(option);
-            });
-            voiceSelect.appendChild(group);
-        }
-
-        if (otherVoices.length > 0) {
-            const group = document.createElement('optgroup');
-            group.label = 'Other Languages';
-            otherVoices.forEach((voice, index) => {
-                const option = document.createElement('option');
-                option.textContent = `${voice.name} (${voice.lang})`;
-                option.value = englishVoices.length + index;
-                group.appendChild(option);
-            });
-            voiceSelect.appendChild(group);
+                option.textContent = 'No voices available';
+                option.value = '';
+                voiceSelect.appendChild(option);
+            }
+        } catch (error) {
+            console.error('Error populating voices:', error);
+            // Set a default option on error
+            voiceSelect.innerHTML = '<option value="">Default Voice</option>';
         }
     }
 
+    // Initial population
     populateVoices();
+    
+    // Re-populate when voices change
+    if (speechSynthesis && speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = populateVoices;
+    }
 
     // Event: Play/Pause button
     playBtn.addEventListener('click', () => {
-        if (!currentWriting) return;
+        if (!currentWriting) {
+            showError('No writing loaded');
+            return;
+        }
 
-        const text = ttsInstance.extractTextContent(currentWriting);
-        
-        ttsInstance.togglePlayPause(
-            text,
-            () => {
-                playBtn.classList.add('playing');
-                playBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                    </svg>
-                    <span>Pause</span>
-                `;
-                stopBtn.disabled = false;
-                statusEl.classList.remove('idle');
-                statusText.textContent = 'Reading...';
-            },
-            () => {
-                playBtn.classList.remove('playing');
-                playBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                    <span>Listen to Story</span>
-                `;
-                stopBtn.disabled = true;
-                statusEl.classList.add('idle');
-                statusText.textContent = 'Finished';
-                setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
-            },
-            (error) => {
-                console.error('TTS Error:', error);
-                playBtn.classList.remove('playing');
-                playBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                    <span>Listen to Story</span>
-                `;
-                stopBtn.disabled = true;
-                statusEl.classList.add('idle');
-                statusText.textContent = 'Error';
-                setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+        try {
+            const textToRead = ttsInstance.extractTextContent(currentWriting);
+            
+            if (!textToRead || textToRead.trim().length === 0) {
+                showError('No content available to read');
+                return;
             }
-        );
+
+            ttsInstance.togglePlayPause(
+                textToRead,
+                // onStart
+                () => {
+                    playBtn.classList.add('playing');
+                    playBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                        <span>Pause</span>
+                    `;
+                    stopBtn.disabled = false;
+                    if (statusEl) statusEl.classList.remove('idle');
+                    if (statusEl) statusEl.classList.add('active');
+                    if (statusText) statusText.textContent = 'Reading...';
+                },
+                // onEnd
+                () => {
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <span>Listen to Story</span>
+                    `;
+                    stopBtn.disabled = true;
+                    if (statusEl) statusEl.classList.remove('active');
+                    if (statusEl) statusEl.classList.add('idle');
+                    if (statusText) statusText.textContent = 'Finished';
+                    setTimeout(() => { 
+                        if (statusText) statusText.textContent = 'Ready'; 
+                    }, 2000);
+                },
+                // onError
+                (error) => {
+                    console.error('TTS Error:', error);
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <span>Listen to Story</span>
+                    `;
+                    stopBtn.disabled = true;
+                    if (statusEl) statusEl.classList.remove('active');
+                    if (statusEl) statusEl.classList.add('idle');
+                    if (statusText) statusText.textContent = 'Error';
+                    showError('Failed to read the story. Please try again.');
+                }
+            );
+        } catch (error) {
+            console.error('Error starting TTS:', error);
+            showError('Failed to start reading. Please try again.');
+        }
     });
 
     // Event: Stop button
@@ -447,39 +501,53 @@ function initializeTTS() {
             <span>Listen to Story</span>
         `;
         stopBtn.disabled = true;
-        statusEl.classList.add('idle');
-        statusText.textContent = 'Stopped';
-        setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+        if (statusEl) statusEl.classList.add('idle');
+        if (statusText) statusText.textContent = 'Stopped';
+        setTimeout(() => { 
+            if (statusText) statusText.textContent = 'Ready'; 
+        }, 2000);
     });
 
     // Event: Settings toggle
-    settingsToggle.addEventListener('click', () => {
-        settingsPanel.classList.toggle('open');
-    });
+    if (settingsToggle && settingsPanel) {
+        settingsToggle.addEventListener('click', () => {
+            settingsPanel.classList.toggle('open');
+        });
+    }
 
     // Event: Voice change
-    voiceSelect.addEventListener('change', (e) => {
-        const voices = ttsInstance.getVoices();
-        const selectedVoice = voices[e.target.value];
-        if (selectedVoice) {
-            ttsInstance.updateSettings({ voice: selectedVoice });
-        }
-    });
+    if (voiceSelect) {
+        voiceSelect.addEventListener('change', (e) => {
+            try {
+                const voices = ttsInstance.getVoices();
+                const selectedVoice = voices[e.target.value];
+                if (selectedVoice) {
+                    ttsInstance.updateSettings({ voice: selectedVoice });
+                }
+            } catch (error) {
+                console.error('Error changing voice:', error);
+            }
+        });
+    }
 
     // Event: Rate slider
-    rateSlider.addEventListener('input', (e) => {
-        const rate = parseFloat(e.target.value);
-        rateValue.textContent = rate.toFixed(1) + 'x';
-        ttsInstance.updateSettings({ rate });
-    });
+    if (rateSlider && rateValue) {
+        rateSlider.addEventListener('input', (e) => {
+            const rate = parseFloat(e.target.value);
+            rateValue.textContent = rate.toFixed(1) + 'x';
+            ttsInstance.updateSettings({ rate });
+        });
+    }
 
     // Event: Pitch slider
-    pitchSlider.addEventListener('input', (e) => {
-        const pitch = parseFloat(e.target.value);
-        pitchValue.textContent = pitch.toFixed(1);
-        ttsInstance.updateSettings({ pitch });
-    });
-};
+    if (pitchSlider && pitchValue) {
+        pitchSlider.addEventListener('input', (e) => {
+            const pitch = parseFloat(e.target.value);
+            pitchValue.textContent = pitch.toFixed(1);
+            ttsInstance.updateSettings({ pitch });
+        });
+    }
+}
 
 // Format excerpt for premium gate
 function formatExcerpt(writing) {
