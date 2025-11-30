@@ -180,7 +180,31 @@ const handleCallback = async (req, res) => {
         }
 
         // Verify transaction with Paystack
-        const transaction = await verifyPaystackTransaction(reference);
+        const verificationResult = await verifyTransaction(reference);
+
+        // Check if verification was successful first
+        if (!verificationResult.success) {
+            return res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Payment Failed</title>
+                    <style>
+                        body { font-family: Arial; text-align: center; padding: 50px; }
+                        .error { color: #d32f2f; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="error">Payment Verification Failed</h1>
+                    <p>${verificationResult.message}</p>
+                    <a href="/">Return to Home</a>
+                </body>
+                </html>
+            `);
+        }
+
+        // Extract transaction data from verification result
+        const transaction = verificationResult.data;
 
         // Check payment status
         if (transaction.status !== 'success') {
@@ -249,9 +273,11 @@ const handleCallback = async (req, res) => {
         
         user.subscriptionTier = planType;
         user.subscriptionStatus = 'active';
+        user.subscriptionStartDate = subscription.startDate;
+        user.subscriptionEndDate = subscription.endDate;
         await user.save();
 
-        // Success page with auto-refresh trigger
+        // Success page with auto-redirect
         return res.send(`
             <!DOCTYPE html>
             <html>
@@ -301,53 +327,42 @@ const handleCallback = async (req, res) => {
                     }
                     .btn {
                         display: inline-block;
-                        margin: 1rem 0.5rem 0;
-                        padding: 0.75rem 1.5rem;
+                        margin: 0.5rem;
+                        padding: 0.75rem 2rem;
                         background: #667eea;
                         color: white;
                         text-decoration: none;
                         border-radius: 8px;
-                        font-weight: 600;
                         transition: background 0.3s;
                     }
                     .btn:hover {
                         background: #5568d3;
                     }
                     .redirect-message {
-                        margin-top: 1.5rem;
-                        color: #666;
+                        margin-top: 2rem;
+                        color: #888;
                         font-size: 0.9rem;
                     }
                     .loader {
-                        border: 3px solid #f3f3f3;
-                        border-top: 3px solid #667eea;
-                        border-radius: 50%;
-                        width: 20px;
-                        height: 20px;
-                        animation: spin 1s linear infinite;
-                        display: inline-block;
-                        margin-left: 10px;
+                        animation: blink 1.5s infinite;
                     }
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
+                    @keyframes blink {
+                        0%, 100% { opacity: 1; }
+                        50% { opacity: 0; }
                     }
                 </style>
                 <script>
-                    // Redirect to subscription page with refresh flag
-                    window.addEventListener('load', function() {
-                        setTimeout(function() {
-                            // This will trigger Auth.refreshUser() in subscription.js
-                            window.location.href = '/views/subscription.html?refresh=true';
-                        }, 3000);
-                    });
+                    // Auto-redirect after 5 seconds
+                    setTimeout(() => {
+                        window.location.href = '/views/subscription.html?refresh=true';
+                    }, 5000);
                 </script>
             </head>
             <body>
                 <div class="container">
                     <div class="success-icon">✓</div>
-                    <h1>Subscription Activated!</h1>
-                    <p>Your ${planType} subscription has been successfully activated.</p>
+                    <h1>Payment Successful!</h1>
+                    <p>Your ${planType} subscription has been activated</p>
                     
                     <div style="margin: 2rem 0; padding: 1.5rem; background: #f5f5f5; border-radius: 10px;">
                         <div class="detail"><strong>Plan:</strong> ${planType.charAt(0).toUpperCase() + planType.slice(1)}</div>
@@ -357,7 +372,7 @@ const handleCallback = async (req, res) => {
                     </div>
 
                     <div class="redirect-message">
-                        Redirecting to your subscription page<span class="loader"></span>
+                        Redirecting to your subscription page<span class="loader">...</span>
                     </div>
                     
                     <a href="/views/subscription.html?refresh=true" class="btn">Go to Subscription Page</a>
