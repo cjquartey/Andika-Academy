@@ -27,79 +27,109 @@
         .payment-options { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
         .payment-option { padding: 1rem 2rem; border: 2px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; }
         .payment-option.selected { border-color: #CE5937; background: rgba(206, 89, 55, 0.1); }
+        .sidebar {
+            width: 300px;
+            padding: 1rem;
+        }
+        .sidebar-ad {
+            min-height: 280px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+        }
+        .content-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="navbar-container"></div>
 
-    <main class="subscription-page">
-        <div class="container">
-            <div class="page-header">
-                <h1>Choose Your Plan</h1>
-                <p>Unlock unlimited storytelling potential</p>
-            </div>
-
-            <div class="current-plan" id="current-plan">
-                <h3>Current Plan: <span id="current-tier">Loading...</span></h3>
-                <p id="current-status"></p>
-            </div>
-
-            <div id="alert-container"></div>
-
-            <div class="plans-grid">
-                <div class="plan-card">
-                    <div class="plan-name">Basic</div>
-                    <div class="plan-price">FREE</div>
-                    <p>Get started with basic features</p>
-                    <ul class="plan-features">
-                        <li>Up to 5 publications per month</li>
-                        <li>Basic analytics</li>
-                        <li>Community support</li>
-                        <li>Free tier stories only</li>
-                    </ul>
-                    <button class="btn btn-outline" id="basic-btn">Current Plan</button>
+    <div class="content-layout">
+        <aside class="sidebar">
+            <div id="sidebar-ad-container"></div>
+            <div class="sidebar-section"></div>
+        </aside>
+        <main class="subscription-page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Choose Your Plan</h1>
+                    <p>Unlock unlimited storytelling potential</p>
                 </div>
 
-                <div class="plan-card featured">
-                    <span class="badge">MOST POPULAR</span>
-                    <div class="plan-name">Premium</div>
-                    <div class="plan-price">GHS 30<span>/month</span></div>
-                    <p>For serious writers</p>
-                    <ul class="plan-features">
-                        <li>Unlimited publications</li>
-                        <li>Advanced analytics</li>
-                        <li>Premium formatting tools</li>
-                        <li>Priority support</li>
-                        <li>Ad-free experience</li>
-                        <li>Create premium content</li>
-                    </ul>
-                    <button class="btn btn-primary" id="premium-btn">Upgrade Now</button>
+                <div class="current-plan" id="current-plan">
+                    <h3>Current Plan: <span id="current-tier">Loading...</span></h3>
+                    <p id="current-status"></p>
                 </div>
-            </div>
 
-            <div class="payment-methods" id="payment-section" style="display: none;">
-                <h3>Select Payment Method</h3>
-                <div class="payment-options">
-                    <div class="payment-option" data-method="mobile_money">
-                        📱 Mobile Money
+                <div id="alert-container"></div>
+
+                <div class="plans-grid">
+                    <div class="plan-card">
+                        <div class="plan-name">Basic</div>
+                        <div class="plan-price">FREE</div>
+                        <p>Get started with basic features</p>
+                        <ul class="plan-features">
+                            <li>Up to 5 publications per month</li>
+                            <li>Basic analytics</li>
+                            <li>Community support</li>
+                            <li>Free tier stories only</li>
+                        </ul>
+                        <button class="btn btn-outline" id="basic-btn">Current Plan</button>
                     </div>
-                    <div class="payment-option" data-method="card">
-                        💳 Card Payment
+
+                    <div class="plan-card featured">
+                        <span class="badge">MOST POPULAR</span>
+                        <div class="plan-name">Premium</div>
+                        <div class="plan-price">GHS 30<span>/month</span></div>
+                        <p>For serious writers</p>
+                        <ul class="plan-features">
+                            <li>Unlimited publications</li>
+                            <li>Advanced analytics</li>
+                            <li>Premium formatting tools</li>
+                            <li>Priority support</li>
+                            <li>Ad-free experience</li>
+                            <li>Create premium content</li>
+                        </ul>
+                        <button class="btn btn-primary" id="premium-btn">Upgrade Now</button>
                     </div>
                 </div>
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button class="btn btn-primary btn-lg" id="proceed-payment">Proceed to Payment</button>
-                </div>
-            </div>
 
-            <div style="margin-top: 3rem; padding: 2rem; background: #f9f9f9; border-radius: 1rem;">
-                <h3>Subscription History</h3>
-                <div id="subscription-history">
-                    <p>Loading...</p>
+                <div class="payment-methods" id="payment-section" style="display: none;">
+                    <h3>Select Payment Method</h3>
+                    <div class="payment-options">
+                        <div class="payment-option" data-method="mobile_money">
+                            📱 Mobile Money
+                        </div>
+                        <div class="payment-option" data-method="card">
+                            💳 Card Payment
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button class="btn btn-primary btn-lg" id="proceed-payment">Proceed to Payment</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem; padding: 2rem; background: #f9f9f9; border-radius: 1rem;">
+                    <h3>Subscription History</h3>
+                    <div id="subscription-history">
+                        <p>Loading...</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <div id="footer-container"></div>
 
@@ -110,6 +140,16 @@
     <script>
         fetch('/views/components/navbar.html').then(r => r.text()).then(h => document.getElementById('navbar-container').innerHTML = h);
         fetch('/views/components/footer.html').then(r => r.text()).then(h => document.getElementById('footer-container').innerHTML = h);
+        fetch('/views/components/sidebar-ad.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('sidebar-ad-container').innerHTML = html;
+                // Execute the script manually
+                const scripts = document.getElementById('sidebar-ad-container').getElementsByTagName('script');
+                for(let script of scripts) {
+                    eval(script.innerHTML);
+                }
+            });
     </script>
 </body>
 </html>

@@ -23,33 +23,66 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .empty-state { text-align: center; padding: 3rem; }
         .empty-state h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .sidebar {
+            width: 300px;
+            padding: 1rem;
+        }
+        .sidebar-ad {
+            min-height: 280px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+        }
+        .content-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="navbar-container"></div>
 
-    <main class="bookmarks-page">
-        <div class="container">
-            <div class="page-header">
-                <h1>📚 Saved Stories</h1>
-                <p>Your bookmarked stories</p>
+    <div class="content-layout">
+
+        <aside class="sidebar">
+            <div id="sidebar-ad-container"></div>
+            <div class="sidebar-section"></div>
+        </aside>
+        
+        <main class="bookmarks-page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>📚 Saved Stories</h1>
+                    <p>Your bookmarked stories</p>
+                </div>
+
+                <div id="alert-container"></div>
+
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+
+                <div id="bookmarks-grid" class="bookmarks-grid" style="display: none;"></div>
+
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <h3>No Bookmarks Yet</h3>
+                    <p>Start bookmarking stories you love!</p>
+                    <a href="/views/writings.html" class="btn btn-primary">Browse Stories</a>
+                </div>
+
             </div>
-
-            <div id="alert-container"></div>
-
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-            </div>
-
-            <div id="bookmarks-grid" class="bookmarks-grid" style="display: none;"></div>
-
-            <div id="empty-state" class="empty-state" style="display: none;">
-                <h3>No Bookmarks Yet</h3>
-                <p>Start bookmarking stories you love!</p>
-                <a href="/views/writings.html" class="btn btn-primary">Browse Stories</a>
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <div id="footer-container"></div>
 
@@ -60,6 +93,17 @@
     <script>
         fetch('/views/components/navbar.html').then(r => r.text()).then(h => document.getElementById('navbar-container').innerHTML = h);
         fetch('/views/components/footer.html').then(r => r.text()).then(h => document.getElementById('footer-container').innerHTML = h);
+        
+        fetch('/views/components/sidebar-ad.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('sidebar-ad-container').innerHTML = html;
+                // Execute the script manually
+                const scripts = document.getElementById('sidebar-ad-container').getElementsByTagName('script');
+                for(let script of scripts) {
+                    eval(script.innerHTML);
+                }
+            });
     </script>
 </body>
 </html>

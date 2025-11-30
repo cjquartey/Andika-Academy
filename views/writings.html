@@ -12,123 +12,156 @@
     <!-- Main CSS -->
     <link rel="stylesheet" href="/public/css/main.css">
     <link rel="stylesheet" href="/public/css/writings.css">
+
+        <style>
+        .sidebar {
+            width: 300px;
+            padding: 1rem;
+        }
+        .sidebar-ad {
+            min-height: 280px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+        }
+        .content-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Include Navbar -->
     <div id="navbar-container"></div>
 
-    <!-- Main Content -->
-    <main class="writings-page">
-        <div class="container">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div>
-                    <h1 id="page-title">Explore Stories</h1>
-                    <p id="page-subtitle">Discover authentic narratives from African writers</p>
+    <div class="content-layout">
+        <aside class="sidebar">
+            <div id="sidebar-ad-container"></div>
+            <div class="sidebar-section"></div>
+        </aside>
+        <!-- Main Content -->
+        <main class="writings-page">
+            <div class="container">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1 id="page-title">Explore Stories</h1>
+                        <p id="page-subtitle">Discover authentic narratives from African writers</p>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Filters and Search -->
-            <div class="filters-section">
-                <!-- Search -->
-                <div class="search-box">
-                    <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
-                        <path d="M12 12L18 18" stroke="currentColor" stroke-width="2"/>
+                <!-- Filters and Search -->
+                <div class="filters-section">
+                    <!-- Search -->
+                    <div class="search-box">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <path d="M12 12L18 18" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <input 
+                            type="search" 
+                            id="search-input" 
+                            placeholder="Search by title, author, or tags..." 
+                            class="search-input"
+                        />
+                        <button id="clear-search" class="clear-search hidden">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm4 10.9L10.9 12 8 9.1 5.1 12 4 10.9 6.9 8 4 5.1 5.1 4 8 6.9 10.9 4 12 5.1 9.1 8 12 10.9z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Filter Pills -->
+                    <div class="filter-pills">
+                        <!-- Category Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">Category:</label>
+                            <div class="pill-group" id="category-pills">
+                                <button class="pill active" data-category="all">All</button>
+                                <button class="pill" data-category="prose">📖 Prose</button>
+                                <button class="pill" data-category="poetry">✍️ Poetry</button>
+                                <button class="pill" data-category="drama">🎭 Drama</button>
+                            </div>
+                        </div>
+
+                        <!-- Sort Options -->
+                        <div class="filter-group">
+                            <label class="filter-label">Sort by:</label>
+                            <select id="sort-select" class="sort-select">
+                                <option value="recent">Most Recent</option>
+                                <option value="popular">Most Popular</option>
+                                <option value="rating">Highest Rated</option>
+                            </select>
+                        </div>
+
+                        <!-- Access Level Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">Access:</label>
+                            <div class="pill-group" id="access-pills">
+                                <button class="pill active" data-access="all">All</button>
+                                <button class="pill" data-access="free">Free</button>
+                                <button class="pill" data-access="premium">Premium</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Info -->
+                <div class="results-info">
+                    <p id="results-text">Loading stories...</p>
+                    <button id="clear-all-filters" class="btn btn-ghost btn-sm hidden">Clear All Filters</button>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- Writings Grid -->
+                <div id="writings-grid" class="writings-grid" style="display: none;"></div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="30" cy="30" r="25"/>
+                        <path d="M48 48L75 75" stroke-width="3"/>
                     </svg>
-                    <input 
-                        type="search" 
-                        id="search-input" 
-                        placeholder="Search by title, author, or tags..." 
-                        class="search-input"
-                    />
-                    <button id="clear-search" class="clear-search hidden">
+                    <h3>No Stories Found</h3>
+                    <p id="empty-message">Try adjusting your filters or search terms</p>
+                    <button id="reset-filters" class="btn btn-primary">Reset Filters</button>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="pagination" style="display: none;">
+                    <button id="prev-page" class="btn btn-outline" disabled>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm4 10.9L10.9 12 8 9.1 5.1 12 4 10.9 6.9 8 4 5.1 5.1 4 8 6.9 10.9 4 12 5.1 9.1 8 12 10.9z"/>
+                            <path d="M10 1L3 8l7 7V1z"/>
+                        </svg>
+                        Previous
+                    </button>
+                    <div class="page-info">
+                        Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                    </div>
+                    <button id="next-page" class="btn btn-outline">
+                        Next
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M6 1l7 7-7 7V1z"/>
                         </svg>
                     </button>
                 </div>
-
-                <!-- Filter Pills -->
-                <div class="filter-pills">
-                    <!-- Category Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">Category:</label>
-                        <div class="pill-group" id="category-pills">
-                            <button class="pill active" data-category="all">All</button>
-                            <button class="pill" data-category="prose">📖 Prose</button>
-                            <button class="pill" data-category="poetry">✍️ Poetry</button>
-                            <button class="pill" data-category="drama">🎭 Drama</button>
-                        </div>
-                    </div>
-
-                    <!-- Sort Options -->
-                    <div class="filter-group">
-                        <label class="filter-label">Sort by:</label>
-                        <select id="sort-select" class="sort-select">
-                            <option value="recent">Most Recent</option>
-                            <option value="popular">Most Popular</option>
-                            <option value="rating">Highest Rated</option>
-                        </select>
-                    </div>
-
-                    <!-- Access Level Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">Access:</label>
-                        <div class="pill-group" id="access-pills">
-                            <button class="pill active" data-access="all">All</button>
-                            <button class="pill" data-access="free">Free</button>
-                            <button class="pill" data-access="premium">Premium</button>
-                        </div>
-                    </div>
-                </div>
             </div>
-
-            <!-- Results Info -->
-            <div class="results-info">
-                <p id="results-text">Loading stories...</p>
-                <button id="clear-all-filters" class="btn btn-ghost btn-sm hidden">Clear All Filters</button>
-            </div>
-
-            <!-- Loading State -->
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-            </div>
-
-            <!-- Writings Grid -->
-            <div id="writings-grid" class="writings-grid" style="display: none;"></div>
-
-            <!-- Empty State -->
-            <div id="empty-state" class="empty-state" style="display: none;">
-                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="30" cy="30" r="25"/>
-                    <path d="M48 48L75 75" stroke-width="3"/>
-                </svg>
-                <h3>No Stories Found</h3>
-                <p id="empty-message">Try adjusting your filters or search terms</p>
-                <button id="reset-filters" class="btn btn-primary">Reset Filters</button>
-            </div>
-
-            <!-- Pagination -->
-            <div id="pagination" class="pagination" style="display: none;">
-                <button id="prev-page" class="btn btn-outline" disabled>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M10 1L3 8l7 7V1z"/>
-                    </svg>
-                    Previous
-                </button>
-                <div class="page-info">
-                    Page <span id="current-page">1</span> of <span id="total-pages">1</span>
-                </div>
-                <button id="next-page" class="btn btn-outline">
-                    Next
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M6 1l7 7-7 7V1z"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <!-- Include Footer -->
     <div id="footer-container"></div>
@@ -153,6 +186,17 @@
             .then(res => res.text())
             .then(html => {
                 document.getElementById('footer-container').innerHTML = html;
+            });
+        
+        fetch('/views/components/sidebar-ad.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('sidebar-ad-container').innerHTML = html;
+                // Execute the script manually
+                const scripts = document.getElementById('sidebar-ad-container').getElementsByTagName('script');
+                for(let script of scripts) {
+                    eval(script.innerHTML);
+                }
             });
     </script>
 </body>
