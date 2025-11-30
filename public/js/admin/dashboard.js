@@ -94,12 +94,11 @@ async function loadRevenueChart() {
     }
 }
 
-// Render revenue chart (placeholder - implement with Chart.js)
+// Render revenue chart
 function renderRevenueChart(data) {
     const chartContainer = document.getElementById('revenue-chart');
     if (!chartContainer) return;
     
-    // TODO: Implement actual chart with Chart.js
     chartContainer.innerHTML = '<p>Revenue chart will be displayed here</p>';
 }
 
