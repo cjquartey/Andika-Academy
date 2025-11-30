@@ -1,5 +1,10 @@
 Auth.requireAuth();
-const currentUser = Auth.getUser();
+
+// Check if redirected from successful payment
+const urlParams = new URLSearchParams(window.location.search);
+const shouldRefresh = urlParams.get('refresh') === 'true';
+
+let currentUser = Auth.getUser();
 
 const currentTierEl = document.getElementById('current-tier');
 const currentStatusEl = document.getElementById('current-status');
@@ -48,6 +53,8 @@ basicBtnEl.addEventListener('click', async () => {
         const response = await API.post('/subscriptions/activate-free');
         if (response.success) {
             showAlert('Switched to Basic plan', 'success');
+            // Refresh user data and reload
+            await Auth.refreshUser();
             setTimeout(() => window.location.reload(), 2000);
         }
     } catch (error) {
@@ -107,7 +114,8 @@ async function loadSubscriptionHistory() {
     try {
         const response = await API.get('/subscriptions/history');
         
-        if (response.success && response.data && response.data.length > 0) {
+        // Check if response exists and has the expected structure
+        if (response && response.success && response.data && Array.isArray(response.data) && response.data.length > 0) {
             subscriptionHistoryEl.innerHTML = `
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
@@ -119,18 +127,28 @@ async function loadSubscriptionHistory() {
                         </tr>
                     </thead>
                     <tbody>
-                        ${response.data.map(sub => `
-                            <tr style="border-bottom: 1px solid #e5e5e5;">
-                                <td style="padding: 0.75rem;">${new Date(sub.createdAt).toLocaleDateString()}</td>
-                                <td style="padding: 0.75rem;">Premium</td>
-                                <td style="padding: 0.75rem;">${sub.amount} ${sub.currency}</td>
-                                <td style="padding: 0.75rem;">
-                                    <span style="color: ${sub.status === 'active' ? '#2D5016' : '#666'};">
-                                        ${sub.status}
-                                    </span>
-                                </td>
-                            </tr>
-                        `).join('')}
+                        ${response.data.map(sub => {
+                            // Safely access properties with defaults
+                            const date = sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A';
+                            const planType = sub.planType || 'Premium';
+                            const amount = sub.amount || 0;
+                            const currency = sub.currency || 'GHS';
+                            const status = sub.status || 'unknown';
+                            const statusColor = status === 'active' ? '#2D5016' : '#666';
+                            
+                            return `
+                                <tr style="border-bottom: 1px solid #e5e5e5;">
+                                    <td style="padding: 0.75rem;">${date}</td>
+                                    <td style="padding: 0.75rem;">${planType.charAt(0).toUpperCase() + planType.slice(1)}</td>
+                                    <td style="padding: 0.75rem;">${currency} ${amount.toFixed(2)}</td>
+                                    <td style="padding: 0.75rem;">
+                                        <span style="color: ${statusColor};">
+                                            ${status.charAt(0).toUpperCase() + status.slice(1)}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
                     </tbody>
                 </table>
             `;
@@ -138,12 +156,49 @@ async function loadSubscriptionHistory() {
             subscriptionHistoryEl.innerHTML = '<p style="color: #666;">No subscription history yet.</p>';
         }
     } catch (error) {
-        console.error('Failed to load history:', error);
-        subscriptionHistoryEl.innerHTML = '<p style="color: #666;">Failed to load history.</p>';
+        console.error('Failed to load subscription history:', error);
+        subscriptionHistoryEl.innerHTML = '<p style="color: #666;">Failed to load subscription history.</p>';
     }
 }
 
-loadCurrentPlan();
-loadSubscriptionHistory();
+// Initialize page with fresh data
+async function initializePage() {
+    try {
+        // Show loading state if needed
+        if (shouldRefresh || !currentUser || !currentUser.subscriptionTier) {
+            // Force refresh from server to get latest subscription status
+            const freshUser = await Auth.refreshUser();
+            if (freshUser) {
+                currentUser = freshUser;
+            } else {
+                currentUser = Auth.getUser();
+            }
+            
+            // Clean URL
+            if (shouldRefresh) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }
+        
+        // Load page content
+        loadCurrentPlan();
+        loadSubscriptionHistory();
+    } catch (error) {
+        console.error('Error initializing page:', error);
+        showAlert('Failed to load subscription data', 'error');
+        // Still try to load with cached data
+        loadCurrentPlan();
+        loadSubscriptionHistory();
+    }
+}
 
-document.querySelector('.payment-option[data-method="mobile_money"]').classList.add('selected');
+// Call on page load
+initializePage();
+
+// Set default payment method
+document.addEventListener('DOMContentLoaded', () => {
+    const defaultPaymentOption = document.querySelector('.payment-option[data-method="mobile_money"]');
+    if (defaultPaymentOption) {
+        defaultPaymentOption.classList.add('selected');
+    }
+});

@@ -163,80 +163,229 @@ const activateFreePlan = async (req, res) => {
 
 const handleCallback = async (req, res) => {
     try {
-        const { reference, trxref } = req.query;
-        const transactionRef = reference || trxref;
+        const { reference } = req.query;
 
-        if (!transactionRef) {
+        if (!reference) {
             return res.status(400).send(`
                 <!DOCTYPE html>
                 <html>
-                <head>
-                    <title>Payment Error</title>
-                    <style>
-                        body { font-family: Arial; text-align: center; padding: 50px; }
-                        .error { color: #d32f2f; }
-                    </style>
-                </head>
+                <head><title>Error</title></head>
                 <body>
-                    <h1 class="error">Payment Error</h1>
-                    <p>No transaction reference provided</p>
+                    <h1>Invalid Request</h1>
+                    <p>No payment reference provided</p>
                     <a href="/">Return to Home</a>
                 </body>
                 </html>
             `);
         }
 
-        // Render processing page with redirect to verification
+        // Verify transaction with Paystack
+        const transaction = await verifyPaystackTransaction(reference);
+
+        // Check payment status
+        if (transaction.status !== 'success') {
+            return res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Payment Failed</title>
+                    <style>
+                        body { font-family: Arial; text-align: center; padding: 50px; }
+                        .error { color: #d32f2f; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="error">Payment Not Successful</h1>
+                    <p>Payment status: ${transaction.status}</p>
+                    <a href="/">Return to Home</a>
+                </body>
+                </html>
+            `);
+        }
+
+        // Find subscription by transaction reference
+        const subscription = await Subscription.findOne({ 
+            transactionId: reference 
+        }).populate('user', 'username email firstName lastName');
+
+        if (!subscription) {
+            return res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head><title>Error</title></head>
+                <body>
+                    <h1>Subscription not found</h1>
+                    <a href="/">Return to Home</a>
+                </body>
+                </html>
+            `);
+        }
+
+        // Validate amount
+        const expectedAmount = convertToPesewas(subscription.amount);
+        const paidAmount = transaction.amount;
+        
+        if (Math.abs(paidAmount - expectedAmount) > 1) {
+            return res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head><title>Amount Mismatch</title></head>
+                <body>
+                    <h1>Payment Amount Mismatch</h1>
+                    <p>Expected: ${convertToGHS(expectedAmount)} GHS</p>
+                    <p>Paid: ${convertToGHS(paidAmount)} GHS</p>
+                </body>
+                </html>
+            `);
+        }
+
+        // Update subscription status
+        subscription.status = 'active';
+        await subscription.save();
+
+        // Update user subscription tier
+        const user = await User.findById(subscription.user._id);
+        const planType = transaction.metadata.plan_type || 'basic';
+        
+        user.subscriptionTier = planType;
+        user.subscriptionStatus = 'active';
+        await user.save();
+
+        // FIX: Improved success page with auto-refresh trigger
         return res.send(`
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Processing Payment</title>
-                <meta http-equiv="refresh" content="0;url=/api/subscriptions/verify?reference=${transactionRef}">
+                <title>Subscription Activated</title>
                 <style>
-                    body { 
-                        font-family: Arial; 
-                        text-align: center; 
-                        padding: 50px;
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        margin: 0;
+                        color: #333;
                     }
-                    .spinner {
-                        border: 4px solid rgba(255,255,255,0.3);
+                    .container {
+                        background: white;
+                        border-radius: 20px;
+                        padding: 3rem;
+                        text-align: center;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        max-width: 500px;
+                    }
+                    .success-icon {
+                        width: 80px;
+                        height: 80px;
+                        margin: 0 auto 1.5rem;
+                        background: #4CAF50;
                         border-radius: 50%;
-                        border-top: 4px solid white;
-                        width: 50px;
-                        height: 50px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 3rem;
+                    }
+                    h1 {
+                        color: #4CAF50;
+                        margin-bottom: 1rem;
+                    }
+                    .detail {
+                        margin: 0.75rem 0;
+                        color: #666;
+                    }
+                    .detail strong {
+                        color: #333;
+                    }
+                    .btn {
+                        display: inline-block;
+                        margin: 1rem 0.5rem 0;
+                        padding: 0.75rem 1.5rem;
+                        background: #667eea;
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        transition: background 0.3s;
+                    }
+                    .btn:hover {
+                        background: #5568d3;
+                    }
+                    .redirect-message {
+                        margin-top: 1.5rem;
+                        color: #666;
+                        font-size: 0.9rem;
+                    }
+                    .loader {
+                        border: 3px solid #f3f3f3;
+                        border-top: 3px solid #667eea;
+                        border-radius: 50%;
+                        width: 20px;
+                        height: 20px;
                         animation: spin 1s linear infinite;
-                        margin: 20px auto;
+                        display: inline-block;
+                        margin-left: 10px;
                     }
                     @keyframes spin {
                         0% { transform: rotate(0deg); }
                         100% { transform: rotate(360deg); }
                     }
                 </style>
+                <script>
+                    // Redirect to subscription page with refresh flag
+                    window.addEventListener('load', function() {
+                        setTimeout(function() {
+                            // This will trigger Auth.refreshUser() in subscription.js
+                            window.location.href = '/views/subscription.html?refresh=true';
+                        }, 3000);
+                    });
+                </script>
             </head>
             <body>
-                <h1>Processing Your Payment</h1>
-                <div class="spinner"></div>
-                <p>Please wait while we verify your payment...</p>
-                <p><small>If not redirected automatically, <a href="/api/subscriptions/verify?reference=${transactionRef}" style="color: white;">click here</a></small></p>
-                <script>
-                    window.location.href = '/api/subscriptions/verify?reference=${transactionRef}';
-                </script>
+                <div class="container">
+                    <div class="success-icon">✓</div>
+                    <h1>Subscription Activated!</h1>
+                    <p>Your ${planType} subscription has been successfully activated.</p>
+                    
+                    <div style="margin: 2rem 0; padding: 1.5rem; background: #f5f5f5; border-radius: 10px;">
+                        <div class="detail"><strong>Plan:</strong> ${planType.charAt(0).toUpperCase() + planType.slice(1)}</div>
+                        <div class="detail"><strong>Amount:</strong> GHS ${subscription.amount.toFixed(2)}</div>
+                        <div class="detail"><strong>Reference:</strong> ${reference}</div>
+                        <div class="detail"><strong>Valid Until:</strong> ${subscription.endDate.toDateString()}</div>
+                    </div>
+
+                    <div class="redirect-message">
+                        Redirecting to your subscription page<span class="loader"></span>
+                    </div>
+                    
+                    <a href="/views/subscription.html?refresh=true" class="btn">Go to Subscription Page</a>
+                    <a href="/views/dashboard.html" class="btn">Go to Dashboard</a>
+                </div>
             </body>
             </html>
         `);
 
     } catch (error) {
-        res.status(500).send(`
+        return res.status(500).send(`
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Payment Error</title>
+                <title>Error</title>
+                <style>
+                    body {
+                        font-family: Arial;
+                        text-align: center;
+                        padding: 50px;
+                    }
+                    .error {
+                        color: #d32f2f;
+                    }
+                </style>
             </head>
             <body>
-                <h1>Error Processing Payment</h1>
+                <h1 class="error">Verification Error</h1>
                 <p>${error.message}</p>
                 <a href="/">Return to Home</a>
             </body>
@@ -244,6 +393,7 @@ const handleCallback = async (req, res) => {
         `);
     }
 };
+
 
 const verifySubscription = async (req, res) => {
     try {

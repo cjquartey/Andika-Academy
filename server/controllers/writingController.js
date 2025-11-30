@@ -100,16 +100,35 @@ const getWritingById = async (req, res) => {
         }
 
         const userId = req.user?.id;
-        const userSubscriptionTier = req.user?.subscriptionTier;
+        let userSubscriptionTier = null;
+        let userSubscriptionStatus = null;
+
+        if (userId) {
+            const currentUser = await User.findById(userId)
+                .select('subscriptionTier subscriptionStatus accountStatus');
+            
+            if (currentUser && currentUser.accountStatus === 'active') {
+                userSubscriptionTier = currentUser.subscriptionTier;
+                userSubscriptionStatus = currentUser.subscriptionStatus;
+            }
+        }
 
         let canAccessFull = false;
 
-        if (writing.status === 'draft'){
-            if (userId === writing.author.toString()) canAccessFull = true;
-        } else if(writing.accessLevel === 'free'){
+        // Check access permissions
+        if (writing.accessLevel === 'free') {
             canAccessFull = true;
-        } else if(writing.accessLevel === 'premium'){
-            if (userSubscriptionTier === 'premium') canAccessFull = true;
+        } else if (writing.accessLevel === 'premium') {
+            // Check if user has active premium subscription
+            if (userSubscriptionTier === 'premium' && 
+                (userSubscriptionStatus === 'active' || !userSubscriptionStatus)) {
+                canAccessFull = true;
+            }
+            
+            // Author can always access their own content
+            if (req.user?.id && writing.author._id.toString() === req.user.id) {
+                canAccessFull = true;
+            }
         }
 
         if (canAccessFull){

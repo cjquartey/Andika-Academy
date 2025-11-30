@@ -108,11 +108,19 @@ async function loadRecentWritings() {
     }
 }
 
-function init() {
-    userNameEl.textContent = currentUser.firstName || currentUser.username;
+// Refresh user data on load to ensure accuracy
+async function initDashboard() {
+    await Auth.refreshUser();
+    const currentUser = Auth.getUser();
+    
+    if (userNameEl) {
+        userNameEl.textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+    }
+    
     loadStats();
     loadSubscriptionInfo();
     loadRecentWritings();
 }
 
-init();
+// Call initialization
+initDashboard();
