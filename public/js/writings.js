@@ -30,9 +30,7 @@ const clearAllFiltersBtn = document.getElementById('clear-all-filters');
 const resetFiltersBtn = document.getElementById('reset-filters');
 const emptyMessageEl = document.getElementById('empty-message');
 
-/**
- * Create writing card HTML
- */
+// Create writing card HTML
 function createWritingCard(writing) {
     const coverImage = writing.coverImageURL || '/public/uploads/covers/default-cover.jpg';
     const authorAvatar = writing.author?.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg';
@@ -81,9 +79,7 @@ function createWritingCard(writing) {
     `;
 }
 
-/**
- * Build query string from state
- */
+// Build query string from state
 function buildQueryString() {
     const params = new URLSearchParams();
     
@@ -104,14 +100,11 @@ function buildQueryString() {
     } else if (state.sort === 'rating') {
         params.append('sort', 'rating');
     }
-    // 'recent' is default, no need to add param
 
     return params.toString();
 }
 
-/**
- * Load writings based on current state
- */
+// Load writings based on current state
 async function loadWritings() {
     if (state.loading) return;
 
@@ -160,9 +153,7 @@ async function loadWritings() {
     }
 }
 
-/**
- * Show empty state
- */
+// Show empty state
 function showEmptyState(message) {
     emptyEl.style.display = 'block';
     if (message) {
@@ -175,9 +166,7 @@ function showEmptyState(message) {
     resultsTextEl.textContent = 'No stories found';
 }
 
-/**
- * Update pagination controls
- */
+// Update pagination controls
 function updatePagination() {
     if (state.totalPages <= 1) {
         paginationEl.style.display = 'none';
@@ -192,9 +181,7 @@ function updatePagination() {
     nextPageBtn.disabled = state.currentPage === state.totalPages;
 }
 
-/**
- * Update page title and subtitle based on filters
- */
+// Update page title and subtitle based on filters
 function updatePageTitle() {
     if (state.category !== 'all') {
         const categoryName = CONFIG.CATEGORIES[state.category];
@@ -209,16 +196,12 @@ function updatePageTitle() {
     }
 }
 
-/**
- * Check if filters are active
- */
+// Check if filters are active
 function hasActiveFilters() {
     return state.category !== 'all' || state.access !== 'all' || state.search !== '' || state.sort !== 'recent';
 }
 
-/**
- * Update clear filters button visibility
- */
+// Update clear filters button visibility
 function updateClearFiltersButton() {
     if (hasActiveFilters()) {
         clearAllFiltersBtn.classList.remove('hidden');
@@ -227,9 +210,7 @@ function updateClearFiltersButton() {
     }
 }
 
-/**
- * Reset all filters
- */
+// Reset all filters
 function resetAllFilters() {
     state.category = 'all';
     state.access = 'all';
@@ -253,9 +234,7 @@ function resetAllFilters() {
     loadWritings();
 }
 
-/**
- * Handle category filter change
- */
+// Handle category filter change
 function handleCategoryChange(category) {
     state.category = category;
     state.currentPage = 1;
@@ -269,9 +248,7 @@ function handleCategoryChange(category) {
     loadWritings();
 }
 
-/**
- * Handle access filter change
- */
+// Handle access filter change
 function handleAccessChange(access) {
     state.access = access;
     state.currentPage = 1;
@@ -284,9 +261,7 @@ function handleAccessChange(access) {
     loadWritings();
 }
 
-/**
- * Handle sort change
- */
+// Handle sort change
 function handleSortChange(sort) {
     state.sort = sort;
     state.currentPage = 1;
@@ -294,9 +269,7 @@ function handleSortChange(sort) {
     loadWritings();
 }
 
-/**
- * Handle search
- */
+// Handle search
 let searchTimeout;
 function handleSearch(searchTerm) {
     clearTimeout(searchTimeout);
@@ -313,12 +286,10 @@ function handleSearch(searchTerm) {
         updatePageTitle();
         updateClearFiltersButton();
         loadWritings();
-    }, 500); // Debounce search
+    }, 500);
 }
 
-/**
- * Handle pagination
- */
+// Handle pagination
 function goToPage(page) {
     if (page < 1 || page > state.totalPages || page === state.currentPage) {
         return;
@@ -329,9 +300,7 @@ function goToPage(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/**
- * Parse URL parameters and set initial state
- */
+// Parse URL parameters and set initial state
 function parseURLParams() {
     const params = new URLSearchParams(window.location.search);
 
@@ -363,9 +332,7 @@ function parseURLParams() {
     updateClearFiltersButton();
 }
 
-/**
- * Initialize event listeners
- */
+// Initialize event listeners
 function initEventListeners() {
     // Category pills
     categoryPills.forEach(pill => {
@@ -412,9 +379,7 @@ function initEventListeners() {
     resetFiltersBtn.addEventListener('click', resetAllFilters);
 }
 
-/**
- * Initialize page
- */
+// Initialize page
 function init() {
     parseURLParams();
     initEventListeners();

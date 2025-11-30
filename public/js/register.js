@@ -18,9 +18,7 @@ const passwordStrengthContainer = document.getElementById('password-strength');
 const strengthFill = document.getElementById('strength-fill');
 const strengthText = document.getElementById('strength-text');
 
-/**
- * Show alert message
- */
+// Show alert message
 function showAlert(message, type = 'error') {
     const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
     const icon = type === 'success' 
@@ -45,9 +43,7 @@ function showAlert(message, type = 'error') {
     }
 }
 
-/**
- * Show field error
- */
+// Show field error
 function showFieldError(fieldId, message) {
     const input = document.getElementById(fieldId);
     const errorElement = document.getElementById(`${fieldId}-error`);
@@ -58,9 +54,7 @@ function showFieldError(fieldId, message) {
     }
 }
 
-/**
- * Clear field error
- */
+// Clear field error
 function clearFieldError(fieldId) {
     const input = document.getElementById(fieldId);
     const errorElement = document.getElementById(`${fieldId}-error`);
@@ -71,24 +65,18 @@ function clearFieldError(fieldId) {
     }
 }
 
-/**
- * Clear all field errors
- */
+// Clear all field errors
 function clearAllErrors() {
     ['firstName', 'lastName', 'username', 'email', 'password', 'confirmPassword', 'terms'].forEach(clearFieldError);
 }
 
-/**
- * Validate email format
- */
+// Validate email format
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-/**
- * Check password strength
- */
+// Check password strength
 function checkPasswordStrength(password) {
     let strength = 0;
     const checks = {
@@ -110,9 +98,7 @@ function checkPasswordStrength(password) {
     };
 }
 
-/**
- * Update password strength indicator
- */
+// Update password strength indicator
 function updatePasswordStrength(password) {
     if (!password) {
         passwordStrengthContainer.style.display = 'none';
@@ -141,9 +127,7 @@ function updatePasswordStrength(password) {
     }
 }
 
-/**
- * Validate form
- */
+// Validate form
 function validateForm() {
     clearAllErrors();
     let isValid = true;
@@ -230,9 +214,7 @@ function validateForm() {
     return isValid;
 }
 
-/**
- * Set loading state
- */
+// Set loading state
 function setLoading(loading) {
     if (loading) {
         submitBtn.disabled = true;
@@ -247,9 +229,7 @@ function setLoading(loading) {
     }
 }
 
-/**
- * Handle form submission
- */
+// Handle form submission
 async function handleRegister(e) {
     e.preventDefault();
 
@@ -311,9 +291,7 @@ async function handleRegister(e) {
     }
 }
 
-/**
- * Toggle password visibility
- */
+// Toggle password visibility
 function togglePasswordVisibility(inputId, buttonElement) {
     const input = document.getElementById(inputId);
     const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -328,9 +306,7 @@ function togglePasswordVisibility(inputId, buttonElement) {
     }
 }
 
-/**
- * Setup input listeners
- */
+// Setup input listeners
 function setupInputListeners() {
     // Clear errors on input
     [firstNameInput, lastNameInput, usernameInput, emailInput, passwordInput, confirmPasswordInput].forEach(input => {
@@ -356,9 +332,7 @@ function setupInputListeners() {
     });
 }
 
-/**
- * Initialize page
- */
+// Initialize page
 function init() {
     // Set up event listeners
     registerForm.addEventListener('submit', handleRegister);

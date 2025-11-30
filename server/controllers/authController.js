@@ -2,10 +2,12 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// Register users
 const register = async (req, res) => {
     try{
         const {username, firstName, lastName, email, password} = req.body;
 
+        // Check if an account with that email or username already exists
         const existingUser = await User.findOne({$or: [{email}, {username}]});
 
         if (existingUser){
@@ -17,6 +19,7 @@ const register = async (req, res) => {
             }
         }
 
+        // Hash passwords for better security
         const hashedPwd = await bcrypt.hash(password, 10);
 
         const result = await User.create({
@@ -37,6 +40,7 @@ const register = async (req, res) => {
     }
 }
 
+// Login users with tokens
 const login = async (req, res) => {
     try{
         const {email, password} = req.body;
@@ -60,6 +64,7 @@ const login = async (req, res) => {
     }
 }
 
+// Return current user details
 const getCurrentUser = async (req, res) => {
     try {
         const id = req.user.id;
@@ -77,6 +82,7 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
+// Return a specific user given an ID
 const getUserById = async (req, res) => {
     try {
         const userId = req.params.userId;
@@ -142,6 +148,7 @@ const uploadProfilePicture = async (req, res) => {
     }
 };
 
+// Update user profile information
 const updateProfile = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -191,6 +198,7 @@ const updateProfile = async (req, res) => {
     }
 };
 
+// Allow users to change their passwords
 const updatePassword = async (req, res) => {
     try {
         const userId = req.user.id;

@@ -222,5 +222,4 @@ function formatDate(dateString) {
 // Utility: Show error
 function showError(message) {
     console.error(message);
-    // TODO: Implement toast notification
 }

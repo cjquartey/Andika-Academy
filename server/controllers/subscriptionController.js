@@ -251,7 +251,7 @@ const handleCallback = async (req, res) => {
         user.subscriptionStatus = 'active';
         await user.save();
 
-        // FIX: Improved success page with auto-refresh trigger
+        // Success page with auto-refresh trigger
         return res.send(`
             <!DOCTYPE html>
             <html>

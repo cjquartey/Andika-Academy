@@ -1,11 +1,6 @@
-/**
- * Admin Panel Styles - Enhanced Version
- * Combines modern sidebar with beautiful card-based stats
- */
+/* Admin Panel Styles - Enhanced Version */
 
-/* ============================================
-   ADMIN SIDEBAR
-   ============================================ */
+/* Admin Sidebar */
 .admin-sidebar {
     position: fixed;
     left: 0;
@@ -214,9 +209,7 @@
     background: var(--sunset-orange);
 }
 
-/* ============================================
-   ADMIN LAYOUT (with sidebar)
-   ============================================ */
+/* Admin Layout (with sidebar) */
 .admin-dashboard,
 .admin-page {
     margin-left: 280px;
@@ -231,9 +224,7 @@
     margin-left: 0;
 }
 
-/* ============================================
-   PAGE HEADER
-   ============================================ */
+/* Page Header */
 .page-header {
     margin-bottom: 2.5rem;
 }
@@ -252,9 +243,7 @@
     font-size: 1.0625rem;
 }
 
-/* ============================================
-   STATS CARDS - BEAUTIFUL CARD DESIGN
-   ============================================ */
+/* Stats Cards */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -445,9 +434,7 @@
     color: #d97706;
 }
 
-/* ============================================
-   FILTERS & SEARCH
-   ============================================ */
+/* Filters & Search */
 .filter-bar {
     background: white;
     padding: 1.5rem;
@@ -519,9 +506,7 @@
     border-color: #9ca3af;
 }
 
-/* ============================================
-   DATA TABLES
-   ============================================ */
+/* Data Tables */
 .table-container {
     background: white;
     border-radius: 12px;
@@ -597,9 +582,7 @@
     font-size: 0.9375rem;
 }
 
-/* ============================================
-   BADGES
-   ============================================ */
+/* Badges */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -636,9 +619,7 @@
     color: #3730a3;
 }
 
-/* ============================================
-   BUTTONS
-   ============================================ */
+/* Buttons */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -713,9 +694,7 @@
     gap: 0.5rem;
 }
 
-/* ============================================
-   PAGINATION
-   ============================================ */
+/* Pagination */
 .pagination-controls {
     display: flex;
     justify-content: space-between;
@@ -736,9 +715,7 @@
     font-weight: 700;
 }
 
-/* ============================================
-   MODALS
-   ============================================ */
+/* Modals */
 .modal {
     display: none;
     position: fixed;
@@ -818,9 +795,7 @@
     padding: 2rem;
 }
 
-/* ============================================
-   DETAIL SECTIONS
-   ============================================ */
+/* Detail Sections */
 .detail-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -867,9 +842,7 @@
     font-weight: 700;
 }
 
-/* ============================================
-   USER TABLE SPECIFIC STYLES
-   ============================================ */
+/* User Table Specific Styles */
 
 /* User info cell layout */
 .user-info {
@@ -1003,9 +976,7 @@
     color: white;
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
+/* Responsive Design */
 @media (max-width: 1024px) {
     .admin-sidebar {
         transform: translateX(-100%);
@@ -1113,9 +1084,7 @@
     }
 }
 
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
+/* Utility Classes */
 .text-center {
     text-align: center;
 }

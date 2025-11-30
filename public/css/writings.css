@@ -21,9 +21,7 @@
     color: var(--text-light);
 }
 
-/* ============================================
-   FILTERS SECTION
-   ============================================ */
+/* Filters Section */
 .filters-section {
     background: var(--surface);
     padding: var(--spacing-md);
@@ -154,9 +152,7 @@
     outline: none;
 }
 
-/* ============================================
-   RESULTS INFO
-   ============================================ */
+/* Results Information */
 .results-info {
     display: flex;
     justify-content: space-between;
@@ -171,9 +167,7 @@
     margin: 0;
 }
 
-/* ============================================
-   WRITINGS GRID
-   ============================================ */
+/* Writings Grid */
 .writings-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -303,9 +297,7 @@
     box-shadow: var(--shadow-sm);
 }
 
-/* ============================================
-   PAGINATION
-   ============================================ */
+/* Pagination */
 .pagination {
     display: flex;
     justify-content: center;
@@ -325,9 +317,7 @@
     gap: var(--spacing-xs);
 }
 
-/* ============================================
-   EMPTY STATE
-   ============================================ */
+/* Empty State */
 .empty-state {
     text-align: center;
     padding: var(--spacing-xl);
@@ -350,9 +340,7 @@
     font-size: 1rem;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+/* Responsive Design */
 @media (max-width: 768px) {
     .filter-group {
         flex-direction: column;

@@ -82,7 +82,7 @@ async function loadDisputeStats() {
                 });
             }
             
-            // Update stat cards with null checks (using correct IDs)
+            // Update stat cards with null checks
             const openEl = document.getElementById('stat-open');
             if (openEl) {
                 openEl.textContent = openCount?.toLocaleString() || '0';

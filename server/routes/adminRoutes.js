@@ -12,7 +12,7 @@ const analyticsController = require('../controllers/adminAnalyticsController');
 router.use(authenticate);
 router.use(isAdmin);
 
-// ============ USER MANAGEMENT ROUTES ============
+// User Management Routes
 router.get('/users', 
     hasPermission('user_management'), 
     userController.getAllUsers
@@ -41,7 +41,7 @@ router.delete('/users/:id',
     userController.deleteUser
 );
 
-// ============ TRANSACTION MONITORING ROUTES ============
+// Transaction Monitoring Routes
 router.get('/transactions', 
     hasPermission('transaction_monitoring'), 
     transactionController.getAllTransactions
@@ -69,7 +69,7 @@ router.patch('/transactions/:id/unflag',
     transactionController.unflagTransaction
 );
 
-// ============ DISPUTE RESOLUTION ROUTES ============
+// Dispute resolution routes
 router.get('/disputes', 
     hasPermission('dispute_resolution'), 
     disputeController.getAllDisputes
@@ -113,7 +113,7 @@ router.patch('/disputes/:id/priority',
     disputeController.updatePriority
 );
 
-// ============ ANALYTICS ROUTES ============
+// Analytics routes
 router.get('/analytics/dashboard', 
     hasPermission('analytics_view'), 
     analyticsController.getDashboardOverview

@@ -18,9 +18,7 @@ function formatDate(dateString) {
     }
 }
 
-/**
- * Create writing card HTML
- */
+// Create writing card HTML
 function createWritingCard(writing) {
     const coverImage = writing.coverImageURL || '/public/uploads/covers/default-cover.jpg';
     const authorAvatar = writing.author?.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg';
@@ -69,9 +67,7 @@ function createWritingCard(writing) {
     `;
 }
 
-/**
- * Load featured writings
- */
+// Load featured writings
 async function loadFeaturedWritings() {
     const loadingEl = document.getElementById('featured-loading');
     const contentEl = document.getElementById('featured-writings');
@@ -99,9 +95,7 @@ async function loadFeaturedWritings() {
     }
 }
 
-/**
- * Load recent writings
- */
+// Load recent writings
 async function loadRecentWritings() {
     const loadingEl = document.getElementById('recent-loading');
     const contentEl = document.getElementById('recent-writings');
@@ -129,9 +123,7 @@ async function loadRecentWritings() {
     }
 }
 
-/**
- * Load category counts
- */
+// Load category counts
 async function loadCategoryCounts() {
     const categories = ['prose', 'poetry', 'drama'];
     
@@ -154,9 +146,7 @@ async function loadCategoryCounts() {
     }
 }
 
-/**
- * Initialize homepage
- */
+// Initialize homepage
 function init() {
     // Load all content
     loadFeaturedWritings();

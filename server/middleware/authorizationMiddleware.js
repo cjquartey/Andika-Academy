@@ -1,6 +1,7 @@
 const Writing = require('../models/Writing');
 const Comment = require('../models/Comment');
 
+// Verify if a user is the author of a writing
 const isAuthorWriting = async(req, res, next) => {
     try{
         const writing = await Writing.findById(req.params.id)
@@ -29,6 +30,7 @@ const isAuthorWriting = async(req, res, next) => {
     }
 };
 
+// Verify if a user is the author of a comment
 const isAuthorComment = async(req, res, next) => {
     try{
         const comment = await Comment.findById(req.params.id)
@@ -57,11 +59,7 @@ const isAuthorComment = async(req, res, next) => {
     }
 };
 
-const isAdmin = async(req, res, next) => {
-    // Will do later
-}
 module.exports = {
     isAuthorWriting,
-    isAuthorComment,
-    isAdmin
+    isAuthorComment
 }

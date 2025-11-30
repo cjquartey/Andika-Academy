@@ -1,11 +1,4 @@
-/**
- * Authentication Pages Styles
- * Login & Register pages
- */
-
-/* ============================================
-   AUTH PAGE LAYOUT
-   ============================================ */
+/* Auth Page Layout */
 .auth-page {
     min-height: calc(100vh - 73px);
     display: flex;
@@ -27,9 +20,7 @@
     min-height: 600px;
 }
 
-/* ============================================
-   FORM SECTION
-   ============================================ */
+/* Form Section */
 .auth-form-section {
     padding: var(--spacing-xl) var(--spacing-lg);
     display: flex;
@@ -61,9 +52,7 @@
     font-size: 1.5rem;
 }
 
-/* ============================================
-   FORM HEADER
-   ============================================ */
+/* Form Header */
 .auth-header {
     margin-bottom: var(--spacing-lg);
 }
@@ -81,9 +70,7 @@
     margin: 0;
 }
 
-/* ============================================
-   FORM STYLES
-   ============================================ */
+/* Form Styles */
 .auth-form {
     margin-top: var(--spacing-md);
 }
@@ -201,9 +188,7 @@
     display: block;
 }
 
-/* ============================================
-   DIVIDER
-   ============================================ */
+/* Divider */
 .auth-divider {
     display: flex;
     align-items: center;
@@ -221,9 +206,7 @@
     background-color: var(--border);
 }
 
-/* ============================================
-   SOCIAL LOGIN
-   ============================================ */
+/* Social Login */
 .social-login {
     margin-bottom: var(--spacing-md);
 }
@@ -254,9 +237,7 @@
     cursor: not-allowed;
 }
 
-/* ============================================
-   FOOTER LINK
-   ============================================ */
+/* Footer Link */
 .auth-footer {
     text-align: center;
     margin-top: var(--spacing-md);
@@ -279,9 +260,7 @@
     color: var(--sunset-orange);
 }
 
-/* ============================================
-   VISUAL SECTION
-   ============================================ */
+/* Visual Section */
 .auth-visual-section {
     background: linear-gradient(135deg, var(--deep-blue) 0%, #0F1F3D 100%);
     position: relative;
@@ -412,9 +391,7 @@
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* ============================================
-   PASSWORD STRENGTH INDICATOR
-   ============================================ */
+/* Password strength indicator */
 .password-strength {
     margin-top: var(--spacing-xs);
 }
@@ -453,9 +430,7 @@
     color: var(--text-light);
 }
 
-/* ============================================
-   ALERT STYLES
-   ============================================ */
+/* Alert Styles */
 #alert-container {
     margin-bottom: var(--spacing-md);
 }
@@ -503,9 +478,7 @@
     font-size: 0.95rem;
 }
 
-/* ============================================
-   TERMS CHECKBOX (for Register)
-   ============================================ */
+/* Terms checkbox */
 .terms-text {
     font-size: 0.875rem;
     line-height: 1.5;
@@ -516,9 +489,7 @@
     text-decoration: underline;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+/* Responsive design */
 @media (max-width: 992px) {
     .auth-container {
         grid-template-columns: 1fr;

@@ -386,9 +386,7 @@ textarea {
     to { transform: rotate(360deg); }
 }
 
-/* ============================================
-   ALERTS & NOTIFICATIONS
-   ============================================ */
+/* Alerts & Notifications */
 .alert {
     padding: var(--spacing-md);
     border-radius: var(--radius-md);

@@ -126,7 +126,7 @@ const getUserDetails = async (req, res) => {
 const suspendUser = async (req, res) => {
     try {
         const { id } = req.params;
-        // Make reason optional - don't destructure if body is undefined
+        // Optional reason
         const reason = req.body?.reason;
 
         const user = await User.findById(id);

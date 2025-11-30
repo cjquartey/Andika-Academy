@@ -43,9 +43,7 @@ const commentsEmptyEl = document.getElementById('comments-empty');
 const bookmarkBtnEl = document.getElementById('bookmark-btn');
 const starBtns = document.querySelectorAll('.star-btn');
 
-/**
- * Format date
- */
+// Format date
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -55,9 +53,7 @@ function formatDate(dateString) {
     });
 }
 
-/**
- * Calculate reading time
- */
+// Calculate reading time
 function calculateReadingTime(text) {
     const wordsPerMinute = 200;
     const words = text.trim().split(/\s+/).length;
@@ -65,18 +61,14 @@ function calculateReadingTime(text) {
     return `${minutes} min read`;
 }
 
-/**
- * Check if user can access writing
- */
+// Check if user can access writing
 function canAccessWriting(writing) {
     if (writing.accessLevel === 'free') return true;
     if (!currentUser) return false;
     return currentUser.subscriptionTier === 'premium';
 }
 
-/**
- * Load writing
- */
+// Load writing
 async function loadWriting() {
     if (!writingId) {
         showError('No writing ID provided');
@@ -108,9 +100,7 @@ async function loadWriting() {
     }
 }
 
-/**
- * Display writing
- */
+// Display writing
 function displayWriting(writing) {
     // Set page title
     document.getElementById('page-title').textContent = `${writing.title} - Andika Academy`;
@@ -214,17 +204,13 @@ function displayWriting(writing) {
     writingContentEl.style.display = 'block';
 }
 
-/**
- * Show error
- */
+// Show error
 function showError(message) {
     document.getElementById('error-message').textContent = message;
     errorStateEl.style.display = 'flex';
 }
 
-/**
- * Setup rating input
- */
+// Setup rating input
 function setupRatingInput() {
     starBtns.forEach((btn, index) => {
         btn.addEventListener('click', () => {
@@ -243,9 +229,7 @@ function setupRatingInput() {
     });
 }
 
-/**
- * Update star display
- */
+// Update star display
 function updateStarDisplay(rating) {
     starBtns.forEach((btn, index) => {
         if (index < rating) {
@@ -263,9 +247,7 @@ function updateStarDisplay(rating) {
     }
 }
 
-/**
- * Submit rating
- */
+// Submit rating
 let isSubmittingRating = false; // Prevent duplicate submissions
 
 async function submitRating(rating) {
@@ -298,9 +280,7 @@ async function submitRating(rating) {
     }
 }
 
-/**
- * Check bookmark status
- */
+// Check bookmark status
 async function checkBookmarkStatus() {
     if (!Auth.isAuthenticated()) return;
 
@@ -315,9 +295,7 @@ async function checkBookmarkStatus() {
     }
 }
 
-/**
- * Update bookmark button
- */
+// Update bookmark button
 function updateBookmarkButton() {
     if (isBookmarked) {
         bookmarkBtnEl.classList.add('bookmarked');
@@ -328,9 +306,7 @@ function updateBookmarkButton() {
     }
 }
 
-/**
- * Toggle bookmark
- */
+// Toggle bookmark
 async function toggleBookmark() {
     if (!Auth.isAuthenticated()) {
         window.location.href = '/views/login.html?redirect=writing&id=' + writingId;
@@ -352,9 +328,7 @@ async function toggleBookmark() {
     }
 }
 
-/**
- * Load comments
- */
+// Load comments
 async function loadComments() {
     try {
         commentsLoadingEl.style.display = 'flex';
@@ -381,9 +355,7 @@ async function loadComments() {
     }
 }
 
-/**
- * Display comments
- */
+// Display comments
 function displayComments(comments) {
     // Filter out comments without content (rating-only)
     const commentsWithContent = comments.filter(comment => comment.content && comment.content.trim());
@@ -415,9 +387,7 @@ function displayComments(comments) {
     commentsListEl.style.display = 'block';
 }
 
-/**
- * Submit comment
- */
+// Submit comment
 async function submitComment(e) {
     e.preventDefault();
 
@@ -440,9 +410,7 @@ async function submitComment(e) {
     }
 }
 
-/**
- * Share story
- */
+// Share story
 function shareStory() {
     const url = window.location.href;
     const title = currentWriting ? currentWriting.title : 'Check out this story';
@@ -460,9 +428,7 @@ function shareStory() {
     }
 }
 
-/**
- * Initialize
- */
+// Initialize
 async function init() {
     // Get current user
     if (Auth.isAuthenticated()) {

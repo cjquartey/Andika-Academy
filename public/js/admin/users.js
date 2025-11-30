@@ -1,7 +1,3 @@
-/**
- * Admin Users Management JavaScript - UPDATED VERSION
- */
-
 let currentPage = 1;
 let totalPages = 1;
 let currentFilters = {};
@@ -279,7 +275,7 @@ async function reinstateUser(userId) {
     }
 }
 
-// CRITICAL: Updated apiRequest function with proper error handling
+// Updated apiRequest function with proper error handling
 async function apiRequest(endpoint, method = 'GET', body = null) {
     const token = localStorage.getItem('andika_auth_token');
     
@@ -308,7 +304,7 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
         console.log('Response status:', response.status);
         console.log('Response ok:', response.ok);
         
-        // IMPORTANT: Parse JSON first before checking if response is ok
+        // Parse JSON first before checking if response is ok
         const data = await response.json();
         
         console.log('Response data:', data);
