@@ -35,10 +35,6 @@ function createWritingCard(writing) {
             <div class="writing-content">
                 <div class="writing-status-row">
                     <span class="writing-status status-${writing.status}">${writing.status}</span>
-                    <div class="writing-actions">
-                        <button onclick="window.location.href='/views/writing-editor.html?id=${writing._id}'" title="Edit">✏️</button>
-                        <button onclick="confirmDelete('${writing._id}', '${writing.title.replace(/'/g, "\\'")}')'" title="Delete">🗑️</button>
-                    </div>
                 </div>
                 <h3 class="writing-title">${writing.title}</h3>
                 <div class="writing-meta">
@@ -52,8 +48,10 @@ function createWritingCard(writing) {
                     ${writing.status === 'published' ? `
                         <a href="${link}" class="btn btn-outline">View</a>
                         <a href="/views/writing-editor.html?id=${writing._id}" class="btn btn-primary">Edit</a>
+                        <button class="btn btn-danger delete-btn" data-id="${writing._id}" data-title="${writing.title.replace(/"/g, '&quot;')}">Delete</button>
                     ` : `
                         <a href="/views/writing-editor.html?id=${writing._id}" class="btn btn-primary">Continue Editing</a>
+                        <button class="btn btn-danger delete-btn" data-id="${writing._id}" data-title="${writing.title.replace(/"/g, '&quot;')}">Delete</button>
                     `}
                 </div>
             </div>
@@ -180,6 +178,15 @@ document.querySelectorAll('.tab').forEach(tab => {
 cancelDeleteEl.addEventListener('click', cancelDelete);
 deleteOverlayEl.addEventListener('click', cancelDelete);
 confirmDeleteEl.addEventListener('click', deleteWriting);
+
+// Event delegation for delete buttons
+gridEl.addEventListener('click', (e) => {
+    if (e.target.classList.contains('delete-btn')) {
+        const writingId = e.target.dataset.id;
+        const title = e.target.dataset.title;
+        confirmDelete(writingId, title);
+    }
+});
 
 window.confirmDelete = confirmDelete;
 

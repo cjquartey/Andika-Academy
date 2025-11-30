@@ -172,15 +172,21 @@
 }
 
 .writing-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-xs);
+    display: flex;
+    gap: 0.5rem;
     margin-top: var(--spacing-md);
 }
 
 .writing-buttons .btn {
-    font-size: 0.875rem;
-    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.writing-buttons .btn-danger {
+    flex: 0.8;
 }
 
 /* Modal */
@@ -292,5 +298,17 @@
 
     .writings-grid {
         grid-template-columns: 1fr;
+    }
+
+    .writing-buttons {
+        flex-direction: column;
+    }
+    
+    .writing-buttons .btn {
+        flex: 1;
+    }
+    
+    .writing-buttons .btn-danger {
+        flex: 1;
     }
 }
