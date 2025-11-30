@@ -98,7 +98,7 @@ function renderUsersTable(users) {
     if (!users || users.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center">No users found</td>
+                <td colspan="8" class="text-center">No users found</td>
             </tr>
         `;
         return;
@@ -108,13 +108,15 @@ function renderUsersTable(users) {
         <tr>
             <td>
                 <div class="user-info">
-                    <img src="${user.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg'}" alt="${user.username}" class="user-avatar-sm">
+                    <img src="${user.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg'}" 
+                         alt="${user.username}" 
+                         class="user-avatar-sm">
                     <div>
                         <strong>${user.username}</strong>
-                        <small>${user.email}</small>
                     </div>
                 </div>
             </td>
+            <td>${user.email}</td>
             <td>
                 <span class="badge badge-${user.role === 'admin' ? 'warning' : 'info'}">
                     ${user.role}
@@ -137,15 +139,14 @@ function renderUsersTable(users) {
                     <button class="btn btn-sm btn-outline" onclick="viewUser('${user._id}')">
                         View
                     </button>
-                    ${user.accountStatus === 'active' ? `
-                        <button class="btn btn-sm btn-danger" onclick="suspendUser('${user._id}')">
+                    ${user.accountStatus === 'active' ?
+                        `<button class="btn btn-sm btn-danger-outline" onclick="suspendUser('${user._id}')">
                             Suspend
-                        </button>
-                    ` : `
-                        <button class="btn btn-sm btn-success" onclick="reinstateUser('${user._id}')">
-                            Reinstate
-                        </button>
-                    `}
+                        </button>` :
+                        `<button class="btn btn-sm btn-success-outline" onclick="activateUser('${user._id}')">
+                            Activate
+                        </button>`
+                    }
                 </div>
             </td>
         </tr>
