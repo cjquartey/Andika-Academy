@@ -177,13 +177,6 @@
                 initializeAdminNavbar();
             });
 
-        // Load footer
-        fetch('/views/components/footer.html')
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('footer-container').innerHTML = html;
-            });
-
         // Admin navbar initialization
         function initializeAdminNavbar() {
             // Highlight active page

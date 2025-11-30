@@ -21,23 +21,50 @@
                 </div>
             </div>
 
-            <!-- Stats Row -->
-            <div class="mini-stats-grid">
-                <div class="mini-stat-card">
-                    <div class="mini-stat-label">Open</div>
-                    <div class="mini-stat-value" id="stat-open">-</div>
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-label">Open</div>
+                    <div class="stat-value" id="stat-open">0</div>
+                    <div class="stat-change">Awaiting response</div>
                 </div>
-                <div class="mini-stat-card">
-                    <div class="mini-stat-label">In Progress</div>
-                    <div class="mini-stat-value" id="stat-progress">-</div>
+
+                <div class="stat-card warning">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-label">In Progress</div>
+                    <div class="stat-value" id="stat-progress">0</div>
+                    <div class="stat-change">Being handled</div>
                 </div>
-                <div class="mini-stat-card success">
-                    <div class="mini-stat-label">Resolved</div>
-                    <div class="mini-stat-value" id="stat-resolved">-</div>
+
+                <div class="stat-card success">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-label">Resolved</div>
+                    <div class="stat-value" id="stat-resolved">0</div>
+                    <div class="stat-change">Successfully closed</div>
                 </div>
-                <div class="mini-stat-card alert">
-                    <div class="mini-stat-label">Urgent</div>
-                    <div class="mini-stat-value" id="stat-urgent">-</div>
+
+                <div class="stat-card alert">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-label">Urgent</div>
+                    <div class="stat-value" id="stat-urgent">0</div>
+                    <div class="stat-change">High priority</div>
                 </div>
             </div>
 
@@ -251,12 +278,6 @@
                 document.getElementById('sidebar-container').innerHTML = html;
 
                 initializeAdminNavbar();
-            });
-
-        fetch('/views/components/footer.html')
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('footer-container').innerHTML = html;
             });
 
         // Admin navbar initialization
