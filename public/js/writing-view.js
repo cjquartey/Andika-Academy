@@ -8,6 +8,10 @@ let currentUser = null;
 let selectedRating = 0;
 let isBookmarked = false;
 
+// For TTS
+let ttsInstance = null;
+let ttsInitialized = false;
+
 // DOM Elements
 const loadingEl = document.getElementById('loading');
 const errorStateEl = document.getElementById('error-state');
@@ -184,6 +188,8 @@ function displayWriting(writing) {
         writingBodyEl.innerHTML = formatWritingContent(writing);
         writingBodyEl.style.display = 'block';
         premiumGateEl.style.display = 'none';
+
+        createTTSUI();
     } else {
         writingBodyEl.innerHTML = formatExcerpt(writing);
         writingBodyEl.style.display = 'block';
@@ -245,7 +251,235 @@ function formatWritingContent(writing) {
     }
     
     return '<p>Content unavailable</p>';
-}
+};
+
+function createTTSUI() {
+    // Check if TTS is supported
+    if (!WritingTTS.isSupported()) {
+        console.warn('Text-to-Speech is not supported in this browser');
+        return;
+    }
+
+    // Create TTS container
+    const ttsContainer = document.createElement('div');
+    ttsContainer.className = 'tts-container';
+    ttsContainer.id = 'tts-container';
+    ttsContainer.innerHTML = `
+        <div class="tts-control-bar">
+            <div class="tts-main-controls">
+                <button class="tts-play-btn" id="tts-play-btn">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="tts-btn-text">Listen to Story</span>
+                </button>
+                <button class="tts-stop-btn" id="tts-stop-btn" disabled>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <rect x="6" y="6" width="12" height="12"/>
+                    </svg>
+                </button>
+                <div class="tts-status idle" id="tts-status">
+                    <span class="tts-status-indicator"></span>
+                    <span id="tts-status-text">Ready</span>
+                </div>
+            </div>
+            <button class="tts-settings-toggle" id="tts-settings-toggle" title="Settings">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/>
+                </svg>
+            </button>
+        </div>
+        <div class="tts-settings-panel" id="tts-settings-panel">
+            <div class="tts-setting-group">
+                <label class="tts-setting-label">Voice</label>
+                <div class="tts-setting-control">
+                    <select class="tts-select" id="tts-voice-select">
+                        <option value="">Loading voices...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="tts-setting-group">
+                <label class="tts-setting-label">Speed</label>
+                <div class="tts-setting-control">
+                    <input type="range" class="tts-slider" id="tts-rate-slider" 
+                           min="0.5" max="2" step="0.1" value="1">
+                    <span class="tts-value-display" id="tts-rate-value">1.0x</span>
+                </div>
+            </div>
+            <div class="tts-setting-group">
+                <label class="tts-setting-label">Pitch</label>
+                <div class="tts-setting-control">
+                    <input type="range" class="tts-slider" id="tts-pitch-slider" 
+                           min="0.5" max="2" step="0.1" value="1">
+                    <span class="tts-value-display" id="tts-pitch-value">1.0</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Insert TTS UI before the writing body
+    const writingBodyEl = document.getElementById('writing-body');
+    if (writingBodyEl && writingBodyEl.parentNode) {
+        writingBodyEl.parentNode.insertBefore(ttsContainer, writingBodyEl);
+    }
+
+    // Initialize TTS after UI is created
+    initializeTTS();
+};
+
+function initializeTTS() {
+    if (ttsInitialized) return;
+
+    ttsInstance = new WritingTTS();
+    ttsInitialized = true;
+
+    // Get UI elements
+    const playBtn = document.getElementById('tts-play-btn');
+    const stopBtn = document.getElementById('tts-stop-btn');
+    const statusEl = document.getElementById('tts-status');
+    const statusText = document.getElementById('tts-status-text');
+    const settingsToggle = document.getElementById('tts-settings-toggle');
+    const settingsPanel = document.getElementById('tts-settings-panel');
+    const voiceSelect = document.getElementById('tts-voice-select');
+    const rateSlider = document.getElementById('tts-rate-slider');
+    const rateValue = document.getElementById('tts-rate-value');
+    const pitchSlider = document.getElementById('tts-pitch-slider');
+    const pitchValue = document.getElementById('tts-pitch-value');
+
+    // Populate voice select
+    function populateVoices() {
+        const voices = ttsInstance.getVoices();
+        if (voices.length === 0) {
+            setTimeout(populateVoices, 100);
+            return;
+        }
+
+        const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+        const otherVoices = voices.filter(v => !v.lang.startsWith('en'));
+
+        voiceSelect.innerHTML = '';
+
+        if (englishVoices.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = 'English';
+            englishVoices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.value = index;
+                group.appendChild(option);
+            });
+            voiceSelect.appendChild(group);
+        }
+
+        if (otherVoices.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = 'Other Languages';
+            otherVoices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.value = englishVoices.length + index;
+                group.appendChild(option);
+            });
+            voiceSelect.appendChild(group);
+        }
+    }
+
+    populateVoices();
+
+    // Event: Play/Pause button
+    playBtn.addEventListener('click', () => {
+        if (!currentWriting) return;
+
+        const text = ttsInstance.extractTextContent(currentWriting);
+        
+        ttsInstance.togglePlayPause(
+            text,
+            () => {
+                playBtn.classList.add('playing');
+                playBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                    </svg>
+                    <span>Pause</span>
+                `;
+                stopBtn.disabled = false;
+                statusEl.classList.remove('idle');
+                statusText.textContent = 'Reading...';
+            },
+            () => {
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span>Listen to Story</span>
+                `;
+                stopBtn.disabled = true;
+                statusEl.classList.add('idle');
+                statusText.textContent = 'Finished';
+                setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+            },
+            (error) => {
+                console.error('TTS Error:', error);
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span>Listen to Story</span>
+                `;
+                stopBtn.disabled = true;
+                statusEl.classList.add('idle');
+                statusText.textContent = 'Error';
+                setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+            }
+        );
+    });
+
+    // Event: Stop button
+    stopBtn.addEventListener('click', () => {
+        ttsInstance.stop();
+        playBtn.classList.remove('playing');
+        playBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+            <span>Listen to Story</span>
+        `;
+        stopBtn.disabled = true;
+        statusEl.classList.add('idle');
+        statusText.textContent = 'Stopped';
+        setTimeout(() => { statusText.textContent = 'Ready'; }, 2000);
+    });
+
+    // Event: Settings toggle
+    settingsToggle.addEventListener('click', () => {
+        settingsPanel.classList.toggle('open');
+    });
+
+    // Event: Voice change
+    voiceSelect.addEventListener('change', (e) => {
+        const voices = ttsInstance.getVoices();
+        const selectedVoice = voices[e.target.value];
+        if (selectedVoice) {
+            ttsInstance.updateSettings({ voice: selectedVoice });
+        }
+    });
+
+    // Event: Rate slider
+    rateSlider.addEventListener('input', (e) => {
+        const rate = parseFloat(e.target.value);
+        rateValue.textContent = rate.toFixed(1) + 'x';
+        ttsInstance.updateSettings({ rate });
+    });
+
+    // Event: Pitch slider
+    pitchSlider.addEventListener('input', (e) => {
+        const pitch = parseFloat(e.target.value);
+        pitchValue.textContent = pitch.toFixed(1);
+        ttsInstance.updateSettings({ pitch });
+    });
+};
 
 // Format excerpt for premium gate
 function formatExcerpt(writing) {
@@ -532,3 +766,9 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
+
+window.addEventListener('beforeunload', () => {
+    if (ttsInstance) {
+        ttsInstance.stop();
+    }
+});
