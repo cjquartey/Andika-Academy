@@ -1,5 +1,5 @@
 const CONFIG = {
-    API_BASE_URL: 'http://localhost:5000/api',
+    API_BASE_URL: window.location.origin + '/api',
     
     // App Information
     APP_NAME: 'Andika Academy',

@@ -4,7 +4,7 @@ const PAYSTACK_CONFIG = {
     secretKey: process.env.PAYSTACK_SECRET_KEY,
     publicKey: process.env.PAYSTACK_PUBLIC_KEY,
     baseUrl: 'https://api.paystack.co',
-    callbackUrl: process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:5000/api/subscriptions/callback'
+    callbackUrl: process.env.PAYSTACK_CALLBACK_URL || `${process.env.APP_URL || 'http://localhost:5000'}/api/subscriptions/callback`
 };
 
 // Subscription plans configuration
