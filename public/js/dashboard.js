@@ -43,25 +43,48 @@ async function loadStats() {
     }
 }
 
-function loadSubscriptionInfo() {
-    const tier = currentUser.subscriptionTier || 'basic';
-    const monthlyPublications = currentUser.monthlyPublications || 0;
-    
-    if (tier === 'premium') {
-        subscriptionTierEl.textContent = 'Premium Plan';
-        document.getElementById('subscription-details').innerHTML = '<span style="color: green;">✓ Unlimited Publications</span>';
-        progressFillEl.style.width = '100%';
-        upgradeBtnEl.style.display = 'none';
-    } else {
-        subscriptionTierEl.textContent = 'Basic Plan';
-        publicationsUsedEl.textContent = monthlyPublications;
-        publicationsLimitEl.textContent = '5';
+async function loadSubscriptionInfo() {
+    try {
+        // Fetch fresh user data from the backend using /auth/me endpoint
+        const userResponse = await API.get('/auth/me');
+        if (!userResponse.success || !userResponse.user) {
+            throw new Error('Failed to fetch user data');
+        }
         
-        const percentage = (monthlyPublications / 5) * 100;
-        progressFillEl.style.width = `${Math.min(percentage, 100)}%`;
+        const userData = userResponse.user;
+        const tier = userData.subscriptionTier || 'basic';
+        const monthlyPublications = userData.monthlyPublications || 0;
         
-        if (monthlyPublications >= 5) {
-            progressFillEl.style.background = '#DC2626';
+        if (tier === 'premium') {
+            subscriptionTierEl.textContent = 'Premium Plan';
+            document.getElementById('subscription-details').innerHTML = '<span style="color: green;">✓ Unlimited Publications</span>';
+            progressFillEl.style.width = '100%';
+            upgradeBtnEl.style.display = 'none';
+        } else {
+            subscriptionTierEl.textContent = 'Basic Plan';
+            publicationsUsedEl.textContent = monthlyPublications;
+            publicationsLimitEl.textContent = '5';
+            
+            const percentage = (monthlyPublications / 5) * 100;
+            progressFillEl.style.width = `${Math.min(percentage, 100)}%`;
+            
+            if (monthlyPublications >= 5) {
+                progressFillEl.style.background = '#DC2626';
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load subscription info:', error);
+        // Fallback to cached user data if API fails
+        const tier = currentUser.subscriptionTier || 'basic';
+        const monthlyPublications = currentUser.monthlyPublications || 0;
+        
+        if (tier === 'premium') {
+            subscriptionTierEl.textContent = 'Premium Plan';
+            document.getElementById('subscription-details').innerHTML = '<span style="color: green;">✓ Unlimited Publications</span>';
+        } else {
+            subscriptionTierEl.textContent = 'Basic Plan';
+            publicationsUsedEl.textContent = monthlyPublications;
+            publicationsLimitEl.textContent = '5';
         }
     }
 }

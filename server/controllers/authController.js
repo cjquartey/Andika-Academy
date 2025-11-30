@@ -71,11 +71,34 @@ const getCurrentUser = async (req, res) => {
         const foundUser = await User.findOne({_id: id});
         if(!foundUser) return res.status(404).json({'message': 'User not found'});
 
-        const {username, email, firstName, lastName, bio, role, subscriptionTier, profilePictureURL} = foundUser;
+        const {
+            username, 
+            email, 
+            firstName, 
+            lastName, 
+            bio, 
+            role, 
+            subscriptionTier, 
+            subscriptionStatus,
+            monthlyPublications,
+            profilePictureURL
+        } = foundUser;
 
         return res.status(200).json({
             success: true,
-            user: {id, username, email, firstName, lastName, bio, role, subscriptionTier, profilePictureURL}
+            user: {
+                id, 
+                username, 
+                email, 
+                firstName, 
+                lastName, 
+                bio, 
+                role, 
+                subscriptionTier,
+                subscriptionStatus,
+                monthlyPublications,
+                profilePictureURL
+            }
         })
     } catch(err){
         res.status(500).json({message: err.message});
