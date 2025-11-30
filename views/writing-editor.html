@@ -6,6 +6,7 @@
     <title>Write Story - Andika Academy</title>
     <link rel="stylesheet" href="/public/css/main.css">
     <link rel="stylesheet" href="/public/css/writing-editor.css">
+    <link rel="stylesheet" href="/public/css/writing-editor-enhanced.css">
     <style>
         .sidebar {
             width: 300px;
@@ -55,10 +56,12 @@
                 <div id="alert-container"></div>
 
                 <form id="editor-form" class="editor-form">
+                    <!-- Title -->
                     <div class="form-group">
-                        <input type="text" id="title-input" placeholder="Story Title" maxlength="100" required />
+                        <input type="text" id="title-input" class="title-input" placeholder="Story Title" maxlength="100" required />
                     </div>
 
+                    <!-- Category and Access Level -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>Category *</label>
@@ -79,17 +82,20 @@
                         </div>
                     </div>
 
+                    <!-- Description -->
                     <div class="form-group">
                         <label>Description</label>
                         <textarea id="description-input" placeholder="Brief description" rows="3" maxlength="500"></textarea>
                     </div>
 
+                    <!-- Cover Image -->
                     <div class="form-group">
                         <label>Cover Image</label>
                         <input type="file" id="cover-image-input" accept="image/*" />
                         <div id="cover-preview" style="margin-top: 1rem;"></div>
                     </div>
 
+                    <!-- Tags -->
                     <div class="form-group">
                         <label>Tags</label>
                         <div class="tags-container">
@@ -98,12 +104,37 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Content *</label>
-                        <textarea id="content-editor" placeholder="Start writing..." rows="20" required></textarea>
-                        <div class="editor-stats">
-                            <span><strong id="word-count">0</strong> words</span>
-                            <span><strong id="char-count">0</strong> characters</span>
+                    <!-- PROSE EDITOR -->
+                    <div id="prose-editor-container" class="content-editor-container" style="display: none;">
+                        <div class="form-group">
+                            <label>Content *</label>
+                            <textarea id="prose-content" class="content-editor" placeholder="Start writing your story..." rows="20"></textarea>
+                            <div class="editor-stats">
+                                <span id="prose-word-count">0 words</span>
+                                <span id="prose-char-count">0 characters</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- POETRY EDITOR -->
+                    <div id="poetry-editor-container" class="content-editor-container" style="display: none;">
+                        <div class="form-group">
+                            <label>Poem *</label>
+                            <div class="poetry-editor">
+                                <div id="poetry-stanzas"></div>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="addStanza()">+ Add Stanza</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DRAMA EDITOR -->
+                    <div id="drama-editor-container" class="content-editor-container" style="display: none;">
+                        <div class="form-group">
+                            <label>Script *</label>
+                            <div class="drama-editor">
+                                <div id="drama-dialogues"></div>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="addDialogue()">+ Add Dialogue</button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -111,6 +142,7 @@
         </main>
     </div>
 
+    <!-- Preview Modal -->
     <div id="preview-modal" class="modal" style="display: none;">
         <div class="modal-overlay" id="modal-overlay"></div>
         <div class="modal-content">

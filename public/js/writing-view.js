@@ -156,7 +156,19 @@ function displayWriting(writing) {
         ratingDisplayEl.textContent = 'No ratings yet';
     }
 
-    readingTimeEl.textContent = calculateReadingTime(writing.content);
+    // Calculate reading time based on category
+    let readingTime;
+    if (writing.category === 'prose') {
+        readingTime = calculateReadingTime(writing.content || '');
+    } else if (writing.category === 'poetry' && writing.stanzas) {
+        const totalLines = writing.stanzas.reduce((sum, stanza) => sum + stanza.lines.length, 0);
+        readingTime = `${totalLines} lines`;
+    } else if (writing.category === 'drama' && writing.dialogues) {
+        readingTime = `${writing.dialogues.length} scenes`;
+    } else {
+        readingTime = 'Unknown';
+    }
+    readingTimeEl.textContent = readingTime;
 
     // Tags
     if (writing.tags && writing.tags.length > 0) {
@@ -169,11 +181,11 @@ function displayWriting(writing) {
     const canAccess = canAccessWriting(writing);
     
     if (canAccess) {
-        writingBodyEl.innerHTML = `<p>${writing.content.replace(/\n/g, '</p><p>')}</p>`;
+        writingBodyEl.innerHTML = formatWritingContent(writing);
         writingBodyEl.style.display = 'block';
         premiumGateEl.style.display = 'none';
     } else {
-        writingBodyEl.innerHTML = `<p>${writing.excerpt || writing.content.substring(0, 500) + '...'}</p>`;
+        writingBodyEl.innerHTML = formatExcerpt(writing);
         writingBodyEl.style.display = 'block';
         premiumGateEl.style.display = 'block';
     }
@@ -202,6 +214,66 @@ function displayWriting(writing) {
     }
 
     writingContentEl.style.display = 'block';
+}
+
+// Format writing content based on category
+function formatWritingContent(writing) {
+    const category = writing.category;
+    
+    if (category === 'prose') {
+        return `<div class="prose-content">${writing.content.replace(/\n\n/g, '</p><p>').replace(/^/, '<p>').replace(/$/, '</p>')}</div>`;
+    } 
+    else if (category === 'poetry' && writing.stanzas) {
+        return '<div class="poetry-content">' + 
+            writing.stanzas.map(stanza => 
+                `<div class="stanza">${stanza.lines.map(line => 
+                    `<div class="line">${line}</div>`
+                ).join('')}</div>`
+            ).join('') +
+            '</div>';
+    } 
+    else if (category === 'drama' && writing.dialogues) {
+        return '<div class="drama-content">' +
+            writing.dialogues.map(dialogue => `
+                <div class="dialogue-entry">
+                    <div class="speaker">${dialogue.speaker}</div>
+                    <div class="dialogue-text">${dialogue.text}</div>
+                    ${dialogue.stageDirection ? `<div class="stage-direction">[${dialogue.stageDirection}]</div>` : ''}
+                </div>
+            `).join('') +
+            '</div>';
+    }
+    
+    return '<p>Content unavailable</p>';
+}
+
+// Format excerpt for premium gate
+function formatExcerpt(writing) {
+    if (writing.excerpt) {
+        return `<div class="prose-content"><p>${writing.excerpt}</p></div>`;
+    }
+    
+    // Generate excerpt based on category
+    if (writing.category === 'prose' && writing.content) {
+        return `<div class="prose-content"><p>${writing.content.substring(0, 500)}...</p></div>`;
+    } 
+    else if (writing.category === 'poetry' && writing.stanzas && writing.stanzas.length > 0) {
+        return '<div class="poetry-content"><div class="stanza">' + 
+            writing.stanzas[0].lines.map(line => `<div class="line">${line}</div>`).join('') +
+            '</div></div>';
+    } 
+    else if (writing.category === 'drama' && writing.dialogues && writing.dialogues.length > 0) {
+        return '<div class="drama-content">' +
+            writing.dialogues.slice(0, 2).map(dialogue => `
+                <div class="dialogue-entry">
+                    <div class="speaker">${dialogue.speaker}</div>
+                    <div class="dialogue-text">${dialogue.text}</div>
+                </div>
+            `).join('') +
+            '</div>';
+    }
+    
+    return '<p>Preview unavailable</p>';
 }
 
 // Show error

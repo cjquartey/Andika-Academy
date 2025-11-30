@@ -5,26 +5,46 @@ const Bookmark = require('../models/Bookmark');
 
 const createWriting = async (req, res) => {
     try{
-        const {title, category, content, description, tags, accessLevel, coverImageURL} = req.body;
+        const {title, category, content, stanzas, dialogues, description, tags, accessLevel, coverImageURL} = req.body;
         const author = req.user.id;
 
-        // Create an exerpt for each writing based on the length of the content
-        const excerptLength = Math.min(Math.floor(0.1 * content.length), 500);
-        const excerpt = content.substring(0, excerptLength) + '...';
+        // Create excerpt based on category
+        let excerpt = '';
+        if (category === 'prose' && content) {
+            const excerptLength = Math.min(Math.floor(0.1 * content.length), 500);
+            excerpt = content.substring(0, excerptLength) + '...';
+        } else if (category === 'poetry' && stanzas && stanzas.length > 0) {
+            // Use first stanza for excerpt
+            excerpt = stanzas[0].lines.join('\n');
+        } else if (category === 'drama' && dialogues && dialogues.length > 0) {
+            // Use first few dialogues for excerpt
+            excerpt = dialogues.slice(0, 3).map(d => `${d.speaker}: ${d.text}`).join('\n');
+        }
 
-        // Save the new writing to the database
-        const newWriting = await Writing.create({
+        // Prepare writing data based on category
+        const writingData = {
             title,
             author,
             category,
-            content,
             description,
             excerpt,
             tags,
             accessLevel,
             coverImageURL,
-            'status': 'draft' // All new writings have a 'draft' status
-        });
+            status: 'draft'
+        };
+
+        // Add category-specific content
+        if (category === 'prose') {
+            writingData.content = content;
+        } else if (category === 'poetry') {
+            writingData.stanzas = stanzas;
+        } else if (category === 'drama') {
+            writingData.dialogues = dialogues;
+        }
+
+        // Save the new writing to the database
+        const newWriting = await Writing.create(writingData);
 
         return res.status(201).json({
             success: true,
@@ -32,6 +52,112 @@ const createWriting = async (req, res) => {
             data: newWriting
         });
     } catch(error){
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+const updateWriting = async (req, res) => {
+    try {
+        const {id} = req.params;
+        const userId = req.user.id;
+        const {title, category, content, stanzas, dialogues, description, tags, accessLevel, coverImageURL} = req.body;
+
+        // Find the writing
+        const writing = await Writing.findById(id);
+
+        if (!writing) {
+            return res.status(404).json({
+                success: false,
+                message: 'Writing not found'
+            });
+        }
+
+        // Check if user is the author
+        if (writing.author.toString() !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to update this writing'
+            });
+        }
+
+        // Prepare update data
+        const updateData = {};
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (tags !== undefined) updateData.tags = tags;
+        if (accessLevel !== undefined) updateData.accessLevel = accessLevel;
+        if (coverImageURL !== undefined) updateData.coverImageURL = coverImageURL;
+
+        // Handle category-specific content
+        if (category !== undefined) {
+            updateData.category = category;
+            
+            if (category === 'prose' && content !== undefined) {
+                updateData.content = content;
+                // Clear other category fields
+                updateData.stanzas = undefined;
+                updateData.dialogues = undefined;
+                
+                // Update excerpt
+                const excerptLength = Math.min(Math.floor(0.1 * content.length), 500);
+                updateData.excerpt = content.substring(0, excerptLength) + '...';
+            } else if (category === 'poetry' && stanzas !== undefined) {
+                updateData.stanzas = stanzas;
+                // Clear other category fields
+                updateData.content = undefined;
+                updateData.dialogues = undefined;
+                
+                // Update excerpt
+                if (stanzas.length > 0) {
+                    updateData.excerpt = stanzas[0].lines.join('\n');
+                }
+            } else if (category === 'drama' && dialogues !== undefined) {
+                updateData.dialogues = dialogues;
+                // Clear other category fields
+                updateData.content = undefined;
+                updateData.stanzas = undefined;
+                
+                // Update excerpt
+                if (dialogues.length > 0) {
+                    updateData.excerpt = dialogues.slice(0, 3).map(d => `${d.speaker}: ${d.text}`).join('\n');
+                }
+            }
+        } else {
+            // Category not changing, just update the content for existing category
+            if (writing.category === 'prose' && content !== undefined) {
+                updateData.content = content;
+                const excerptLength = Math.min(Math.floor(0.1 * content.length), 500);
+                updateData.excerpt = content.substring(0, excerptLength) + '...';
+            } else if (writing.category === 'poetry' && stanzas !== undefined) {
+                updateData.stanzas = stanzas;
+                if (stanzas.length > 0) {
+                    updateData.excerpt = stanzas[0].lines.join('\n');
+                }
+            } else if (writing.category === 'drama' && dialogues !== undefined) {
+                updateData.dialogues = dialogues;
+                if (dialogues.length > 0) {
+                    updateData.excerpt = dialogues.slice(0, 3).map(d => `${d.speaker}: ${d.text}`).join('\n');
+                }
+            }
+        }
+
+        // Update the writing
+        const updatedWriting = await Writing.findByIdAndUpdate(
+            id,
+            updateData,
+            {new: true, runValidators: true}
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Writing updated successfully',
+            data: updatedWriting
+        });
+
+    } catch (error) {
         res.status(500).json({
             success: false,
             message: error.message
@@ -184,39 +310,6 @@ const getWritingById = async (req, res) => {
     }
 };
 
-const updateWriting = async (req, res) => {
-    try{
-        const writing = req.writing;
-
-        const {title, category, content, description, tags, accessLevel, coverImageURL} = req.body;
-
-        if (title) writing.title = title;
-        if (category) writing.category = category;
-        if (content) {
-            writing.content = content;
-            const excerptLength = Math.min(Math.floor(0.1 * content.length), 500);
-            const excerpt = content.substring(0, excerptLength) + '...';
-            writing.excerpt = excerpt;
-        }
-        if (description) writing.description = description;
-        if (tags) writing.tags = tags;
-        if (accessLevel) writing.accessLevel = accessLevel;
-        if (coverImageURL) writing.coverImageURL = coverImageURL;
-
-        await writing.save();
-
-        return res.status(200).json({
-            success: true,
-            message: 'Writing updated',
-            data: writing
-        })
-    } catch(error){
-        res.status(500).json({
-            success:false,
-            message: error.message
-        });
-    }
-};
 const deleteWriting = async (req, res) => {
     try{
         const writing = req.writing;

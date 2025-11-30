@@ -443,3 +443,165 @@
         text-align: center;
     }
 }
+
+/* POETRY FORMATTING */
+.writing-body .poetry-content {
+    font-family: var(--font-accent, 'Georgia', serif);
+    line-height: 1.8;
+    max-width: 600px;
+    margin: 2rem auto;
+    text-align: left;
+    padding-left: 2rem;
+}
+
+.writing-body .stanza {
+    margin-bottom: 2.5rem; /* More space between stanzas */
+    padding-bottom: 1rem;
+}
+
+.writing-body .stanza .line {
+    margin-bottom: 0.5rem;
+    font-size: 1.125rem;
+}
+
+/* Add visual separator between stanzas */
+.writing-body .stanza:not(:last-child)::after {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: #e5e7eb;
+    margin: 1.5rem 0 0 0;
+}
+
+/* DRAMA FORMATTING */
+.writing-body .drama-content {
+    font-family: var(--font-accent, 'Georgia', serif);
+    max-width: 700px;
+    margin: 2rem auto;
+}
+
+.writing-body .dialogue-entry {
+    margin-bottom: 2.5rem;
+    padding-left: 1rem;
+    border-left: 3px solid transparent;
+}
+
+.writing-body .speaker {
+    font-weight: 700;
+    color: var(--deep-blue, #1B3B6F);
+    text-transform: uppercase;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.1em;
+    font-family: var(--font-body, 'Arial', sans-serif);
+}
+
+.writing-body .dialogue-text {
+    padding-left: 2rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.8;
+    font-size: 1.125rem;
+    color: #1f2937;
+}
+
+.writing-body .stage-direction {
+    font-style: italic;
+    color: #6b7280;
+    padding-left: 2rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    opacity: 0.85;
+}
+
+.writing-body .stage-direction::before {
+    content: "[";
+}
+
+.writing-body .stage-direction::after {
+    content: "]";
+}
+
+/* Preview Modal Styles */
+.preview-content .poetry-content {
+    font-family: var(--font-accent, 'Georgia', serif);
+    line-height: 1.8;
+    text-align: left;
+    padding-left: 2rem;
+}
+
+.preview-content .stanza {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+}
+
+.preview-content .stanza:not(:last-child)::after {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: #e5e7eb;
+    margin: 1.5rem 0 0 0;
+}
+
+.preview-content .line {
+    margin-bottom: 0.5rem;
+    font-size: 1.125rem;
+}
+
+.preview-content .drama-content {
+    font-family: var(--font-accent, 'Georgia', serif);
+}
+
+.preview-content .dialogue-entry {
+    margin-bottom: 2.5rem;
+    padding-left: 1rem;
+}
+
+.preview-content .speaker {
+    font-weight: 700;
+    color: var(--deep-blue, #1B3B6F);
+    text-transform: uppercase;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.1em;
+    font-family: var(--font-body, 'Arial', sans-serif);
+}
+
+.preview-content .dialogue-text {
+    padding-left: 2rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.8;
+    font-size: 1.125rem;
+}
+
+.preview-content .stage-direction {
+    font-style: italic;
+    color: #6b7280;
+    padding-left: 2rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.preview-content .stage-direction::before {
+    content: "[";
+}
+
+.preview-content .stage-direction::after {
+    content: "]";
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .writing-body .poetry-content,
+    .writing-body .drama-content {
+        padding-left: 1rem;
+    }
+
+    .writing-body .dialogue-text,
+    .writing-body .stage-direction,
+    .preview-content .dialogue-text,
+    .preview-content .stage-direction {
+        padding-left: 1rem;
+    }
+}

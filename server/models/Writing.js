@@ -5,7 +5,22 @@ const writingSchema = new Schema({
     category: {type: String, enum: ['prose', 'poetry', 'drama'], required: [true, 'Category is required']},
     title: {type: String, required: [true, 'Title is required']},
     author: {type: Schema.Types.ObjectId, ref : 'User', required: [true, 'Author is required']},
+    
+    // For prose - plain text
     content: {type: String},
+    
+    // Structured content for poetry - array of stanzas
+    stanzas: [{
+        lines: [String]
+    }],
+    
+    // Structured content for drama - array of dialogue entries
+    dialogues: [{
+        speaker: String,
+        text: String,
+        stageDirection: String
+    }],
+    
     description: {type: String, maxlength: [500, 'Description cannot exceed 500 characters']},
     excerpt: {type: String},
     accessLevel: {type: String, enum: ['free', 'premium'], default: 'free'},
@@ -19,6 +34,7 @@ const writingSchema = new Schema({
 }, {
     timestamps: true
 });
+
 writingSchema.index({tags: 1});
 writingSchema.index({author: 1, status: 1});
 writingSchema.index({status: 1, category: 1});

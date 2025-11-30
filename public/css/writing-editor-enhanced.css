@@ -1,0 +1,285 @@
+/* Poetry Editor */
+.poetry-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.stanza-container {
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.stanza-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.stanza-header h4 {
+    margin: 0;
+    color: var(--deep-blue);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.lines-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.line-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.line-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-accent);
+    font-size: 1rem;
+    transition: border-color var(--transition-fast);
+}
+
+.line-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    transition: color var(--transition-fast);
+}
+
+.btn-icon:hover {
+    color: var(--terracotta);
+}
+
+.btn-icon-sm {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: color var(--transition-fast);
+}
+
+.btn-icon-sm:hover {
+    color: var(--terracotta);
+}
+
+/* Drama Editor */
+.drama-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.dialogue-container {
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.dialogue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.dialogue-header h4 {
+    margin: 0;
+    color: var(--deep-blue);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.dialogue-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.speaker-input {
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--deep-blue);
+    transition: border-color var(--transition-fast);
+}
+
+.speaker-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.dialogue-text {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-accent);
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color var(--transition-fast);
+}
+
+.dialogue-text:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.stage-direction-input {
+    padding: 0.75rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    font-style: italic;
+    color: var(--text-light);
+    font-size: 0.9375rem;
+    transition: border-color var(--transition-fast);
+}
+
+.stage-direction-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* Preview Styles */
+.preview-content .prose-content p {
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+}
+
+.preview-content .poetry-content {
+    font-family: var(--font-accent);
+    line-height: 2;
+}
+
+.preview-content .stanza {
+    margin-bottom: 2rem;
+    padding-left: 2rem;
+}
+
+.preview-content .line {
+    margin-bottom: 0.5rem;
+}
+
+.preview-content .drama-content {
+    font-family: var(--font-accent);
+}
+
+.preview-content .dialogue-entry {
+    margin-bottom: 2rem;
+}
+
+.preview-content .speaker {
+    font-weight: 700;
+    color: var(--deep-blue);
+    text-transform: uppercase;
+    font-size: 0.9375rem;
+    margin-bottom: 0.5rem;
+}
+
+.preview-content .dialogue-text {
+    padding-left: 2rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.preview-content .stage-direction {
+    font-style: italic;
+    color: var(--text-light);
+    padding-left: 2rem;
+    font-size: 0.9375rem;
+}
+
+/* Reader View Styles */
+.writing-body .prose-content p {
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+}
+
+.writing-body .poetry-content {
+    font-family: var(--font-accent);
+    line-height: 2;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.writing-body .stanza {
+    margin-bottom: 2.5rem;
+}
+
+.writing-body .stanza .line {
+    margin-bottom: 0.5rem;
+}
+
+.writing-body .drama-content {
+    font-family: var(--font-accent);
+}
+
+.writing-body .dialogue-entry {
+    margin-bottom: 2.5rem;
+}
+
+.writing-body .speaker {
+    font-weight: 700;
+    color: var(--deep-blue);
+    text-transform: uppercase;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.writing-body .dialogue-text {
+    padding-left: 2rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.8;
+}
+
+.writing-body .stage-direction {
+    font-style: italic;
+    color: var(--text-light);
+    padding-left: 2rem;
+    font-size: 0.9375rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stanza-container,
+    .dialogue-container {
+        padding: 1rem;
+    }
+
+    .writing-body .poetry-content,
+    .writing-body .dialogue-text,
+    .preview-content .dialogue-text {
+        padding-left: 1rem;
+    }
+
+    .writing-body .stage-direction,
+    .preview-content .stage-direction {
+        padding-left: 1rem;
+    }
+}
