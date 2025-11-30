@@ -126,7 +126,8 @@ const getUserDetails = async (req, res) => {
 const suspendUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { reason } = req.body;
+        // Make reason optional - don't destructure if body is undefined
+        const reason = req.body?.reason;
 
         const user = await User.findById(id);
         
@@ -145,6 +146,12 @@ const suspendUser = async (req, res) => {
         }
 
         user.accountStatus = 'suspended';
+        
+        // Optionally store the reason if provided
+        if (reason) {
+            user.suspensionReason = reason;
+        }
+        
         await user.save();
 
         res.json({
@@ -176,6 +183,12 @@ const reinstateUser = async (req, res) => {
         }
 
         user.accountStatus = 'active';
+        
+        // Clear suspension reason if it exists
+        if (user.suspensionReason) {
+            user.suspensionReason = undefined;
+        }
+        
         await user.save();
 
         res.json({

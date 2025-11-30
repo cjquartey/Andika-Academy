@@ -1,5 +1,5 @@
 /**
- * Admin Users Management JavaScript
+ * Admin Users Management JavaScript - UPDATED VERSION
  */
 
 let currentPage = 1;
@@ -83,43 +83,32 @@ async function loadUsers() {
         const response = await apiRequest(`/admin/users?${params}`);
         
         if (response.status === 'success') {
-            const { users, pagination } = response.data;
-            totalPages = pagination.pages;
-            
-            renderUsersTable(users);
-            updatePagination(pagination);
+            displayUsers(response.data.users);
+            updatePagination(response.data.pagination);
+            totalPages = response.data.pagination.pages;
         }
     } catch (error) {
         console.error('Error loading users:', error);
-        showError('Failed to load users');
+        showError(error.message || 'Failed to load users');
     }
 }
 
-function renderUsersTable(users) {
+function displayUsers(users) {
     const tbody = document.getElementById('users-table-body');
-    if (!tbody) return;
     
-    if (!users || users.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="8" class="text-center">No users found</td>
-            </tr>
-        `;
+    if (!tbody) {
+        console.error('Users table body not found');
         return;
     }
-    
+
+    if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No users found</td></tr>';
+        return;
+    }
+
     tbody.innerHTML = users.map(user => `
         <tr>
-            <td>
-                <div class="user-info">
-                    <img src="${user.profilePictureURL || '/public/uploads/profiles/default-avatar.jpg'}" 
-                         alt="${user.username}" 
-                         class="user-avatar-sm">
-                    <div>
-                        <strong>${user.username}</strong>
-                    </div>
-                </div>
-            </td>
+            <td>${user.username}</td>
             <td>${user.email}</td>
             <td>
                 <span class="badge badge-${user.role === 'admin' ? 'warning' : 'info'}">
@@ -147,8 +136,8 @@ function renderUsersTable(users) {
                         `<button class="btn btn-sm btn-danger-outline" onclick="suspendUser('${user._id}')">
                             Suspend
                         </button>` :
-                        `<button class="btn btn-sm btn-success-outline" onclick="activateUser('${user._id}')">
-                            Activate
+                        `<button class="btn btn-sm btn-success-outline" onclick="reinstateUser('${user._id}')">
+                            Reinstate
                         </button>`
                     }
                 </div>
@@ -173,12 +162,11 @@ async function viewUser(userId) {
         const response = await apiRequest(`/admin/users/${userId}`);
         
         if (response.status === 'success') {
-            // Pass both user and stats to the modal
             showUserModal(response.data.user, response.data.stats);
         }
     } catch (error) {
         console.error('Error loading user details:', error);
-        showError('Failed to load user details');
+        showError(error.message || 'Failed to load user details');
     }
 }
 
@@ -246,8 +234,12 @@ async function suspendUser(userId) {
         return;
     }
     
+    console.log('Attempting to suspend user:', userId);
+    
     try {
         const response = await apiRequest(`/admin/users/${userId}/suspend`, 'PATCH');
+        
+        console.log('Suspend response:', response);
         
         if (response.status === 'success') {
             showSuccess('User suspended successfully');
@@ -255,7 +247,12 @@ async function suspendUser(userId) {
         }
     } catch (error) {
         console.error('Error suspending user:', error);
-        showError('Failed to suspend user');
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
+        // Show the actual error message from the backend
+        showError(error.message || 'Failed to suspend user');
     }
 }
 
@@ -264,8 +261,12 @@ async function reinstateUser(userId) {
         return;
     }
     
+    console.log('Attempting to reinstate user:', userId);
+    
     try {
         const response = await apiRequest(`/admin/users/${userId}/reinstate`, 'PATCH');
+        
+        console.log('Reinstate response:', response);
         
         if (response.status === 'success') {
             showSuccess('User reinstated successfully');
@@ -273,13 +274,22 @@ async function reinstateUser(userId) {
         }
     } catch (error) {
         console.error('Error reinstating user:', error);
-        showError('Failed to reinstate user');
+        // Show the actual error message from the backend
+        showError(error.message || 'Failed to reinstate user');
     }
 }
 
-// Utility functions
+// CRITICAL: Updated apiRequest function with proper error handling
 async function apiRequest(endpoint, method = 'GET', body = null) {
     const token = localStorage.getItem('andika_auth_token');
+    
+    console.log('Making API request:', {
+        endpoint,
+        method,
+        hasToken: !!token,
+        body
+    });
+    
     const options = {
         method,
         headers: {
@@ -292,13 +302,28 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
         options.body = JSON.stringify(body);
     }
     
-    const response = await fetch(`/api${endpoint}`, options);
-    
-    if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+    try {
+        const response = await fetch(`/api${endpoint}`, options);
+        
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        // IMPORTANT: Parse JSON first before checking if response is ok
+        const data = await response.json();
+        
+        console.log('Response data:', data);
+        
+        if (!response.ok) {
+            // Throw error with the actual message from the backend
+            throw new Error(data.message || `API request failed: ${response.status}`);
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('API Request Error:', error);
+        // Re-throw the error so the calling function can handle it
+        throw error;
     }
-    
-    return await response.json();
 }
 
 function formatDate(dateString) {
