@@ -34,7 +34,11 @@ function setupEventListeners() {
     // Filters
     ['filter-role', 'filter-tier', 'filter-status'].forEach(id => {
         document.getElementById(id)?.addEventListener('change', (e) => {
-            const filterKey = id.replace('filter-', '');
+            let filterKey = id.replace('filter-', '');
+            // Map frontend filter names to backend parameter names
+            if (filterKey === 'tier') filterKey = 'subscriptionTier';
+            if (filterKey === 'status') filterKey = 'accountStatus';
+            
             currentFilters[filterKey] = e.target.value;
             currentPage = 1;
             loadUsers();
@@ -169,7 +173,8 @@ async function viewUser(userId) {
         const response = await apiRequest(`/admin/users/${userId}`);
         
         if (response.status === 'success') {
-            showUserModal(response.data.user);
+            // Pass both user and stats to the modal
+            showUserModal(response.data.user, response.data.stats);
         }
     } catch (error) {
         console.error('Error loading user details:', error);
@@ -177,7 +182,7 @@ async function viewUser(userId) {
     }
 }
 
-function showUserModal(user) {
+function showUserModal(user, stats) {
     const modal = document.getElementById('user-modal');
     const content = document.getElementById('user-details-content');
     
@@ -217,11 +222,11 @@ function showUserModal(user) {
                 <h3>Activity Statistics</h3>
                 <dl>
                     <dt>Total Writings:</dt>
-                    <dd>${user.stats?.totalWritings || 0}</dd>
+                    <dd>${stats?.totalWritings || 0}</dd>
                     <dt>Total Views:</dt>
-                    <dd>${user.stats?.totalViews || 0}</dd>
+                    <dd>${stats?.totalViews || 0}</dd>
                     <dt>Total Comments:</dt>
-                    <dd>${user.stats?.totalComments || 0}</dd>
+                    <dd>${stats?.totalComments || 0}</dd>
                     <dt>Monthly Publications Used:</dt>
                     <dd>${user.monthlyPublications || 0} / ${user.subscriptionTier === 'premium' ? 'Unlimited' : '5'}</dd>
                 </dl>

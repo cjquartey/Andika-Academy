@@ -68,6 +68,7 @@ const getAllUsers = async (req, res) => {
 const getUserDetails = async (req, res) => {
     try {
         const { id } = req.params;
+        const Comment = require('../models/Comment');
 
         const user = await User.findById(id).select('-password');
         
@@ -79,10 +80,17 @@ const getUserDetails = async (req, res) => {
         }
 
         // Get user stats
-        const [subscriptions, transactions, writings] = await Promise.all([
+        const [subscriptions, transactions, writingsCount, totalViews, totalComments] = await Promise.all([
             Subscription.find({ user: id }).sort({ createdAt: -1 }).limit(5),
             Transaction.find({ user: id }).sort({ createdAt: -1 }).limit(10),
-            Writing.countDocuments({ author: id })
+            Writing.countDocuments({ author: id }),
+            // Calculate total views from all user's writings
+            Writing.aggregate([
+                { $match: { author: user._id } },
+                { $group: { _id: null, totalViews: { $sum: '$viewCount' } } }
+            ]),
+            // Count total comments by this user
+            Comment.countDocuments({ author: id })
         ]);
 
         const totalSpent = await Transaction.aggregate([
@@ -95,7 +103,9 @@ const getUserDetails = async (req, res) => {
             data: {
                 user,
                 stats: {
-                    totalWritings: writings,
+                    totalWritings: writingsCount,
+                    totalViews: totalViews[0]?.totalViews || 0,
+                    totalComments: totalComments,
                     totalSpent: totalSpent[0]?.total || 0,
                     activeSubscription: subscriptions.find(s => s.status === 'active'),
                     recentTransactions: transactions,
